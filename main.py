@@ -7,13 +7,8 @@ user_agent = UserAgent()
 
 # options
 options = webdriver.ChromeOptions()
-
-# set user-agent
 options.add_argument(f'user-agent={user_agent.random}')
-
-# set proxy
-options.add_argument('--proxy-server=192.99.59.97:3128')
-options.add_argument('--proxy-server=51.222.21.92:32768')
+options.add_argument('--proxy-server=194.67.215.166:9434')
 
 url = 'https://porofessor.gg/ru/live/euw/Composites'
 url_user_agent = 'https://xn--80agecg4bru4h.xn--p1ai/'
