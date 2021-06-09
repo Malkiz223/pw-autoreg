@@ -1,9 +1,15 @@
 import csv
 import time
 
+import os
+import time
+
+import requests
+
 from fake_useragent import UserAgent
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchWindowException
+from selenium.webdriver.common.keys import Keys
 
 PW_URL = 'https://pw.mail.ru/'
 PW_PROMO_URL = 'https://pw.mail.ru/pin.php'
@@ -21,6 +27,9 @@ class PwAccount:
         self.password = account_password
         self.driver = webdriver.Chrome(executable_path=CHROME_WEBDRIVER_PATH,
                                        options=self.options)
+        self.api_key = os.getenv('APIKEY_2CAPTCHA')
+        self.data_sitekey = '6Lc0CjsUAAAAANK9Z3pR1xlNQxMhbk8ZoYv1ceV5'
+        self.page_url = 'https://pw.mail.ru/'
 
     def login_to_pw_site(self):
         self.driver.get(PW_URL)  # открываем сайт ПВ в Chrome
@@ -37,22 +46,24 @@ class PwAccount:
 
         while True:  # вводим логин и ждём, пока поле "Пароль" пропадёт
             try:
-                login_field = self.driver.find_element_by_class_name('ph-form__input')
+                self.driver.implicitly_wait(10)
+                self.driver.launch_app()
+                login_field = self.driver.find_elements_by_tag_name('input')[0]
                 login_field.send_keys(self.login)
+                password_field = self.driver.find_elements_by_tag_name('input')[1]
+                password_field.send_keys(self.password)
+                time.sleep(5)
+                password_field.send_keys(Keys.ENTER)
                 break
             except NoSuchElementException:
                 pass
+            except IndexError:
+                print('Ищу индексы инпута')
 
-        while True:  # поле Пароль пропало, кнопка "Войти" стала активной, жмём на неё
-            try:
-                enter_button = self.driver.find_element_by_xpath('//button[text()="Войти"]')
-                enter_button.click()
-                break
-            except ElementClickInterceptedException:
-                pass
+        if 'yandex.ru' not in self.login:
+            self._login_third_window()  # третье окно закрыто, продолжаем
+            self.driver.implicitly_wait(10)
 
-        self._login_third_window()  # третье окно закрыто, продолжаем
-        self.driver.implicitly_wait(10)
         # time.sleep(2)
         self.driver.switch_to.window(self.driver.window_handles[1])
         try:
@@ -165,17 +176,43 @@ class PwAccount:
                 "//tbody/tr[1]/td[1]/div[1]/div[2]/div[3]/form[1]/div[2]/input[1]")
             activate_button.click()
 
+    def finish_register(self):
+        print('Завершаю регистрацию, жду')
+        self.driver.implicitly_wait(10)
+        self.driver.find_element_by_xpath("//label[contains(text(),'Я соглашаюсь получать новости, рассылки об акциях ')]").click()
+        self.driver.find_element_by_xpath("//body/div[6]/div[2]/div[2]/div[1]/p[2]/label[1]").click()
+
+    def recaptcha_solver(self):
+        u1 = f"https://rucaptcha.com/in.php?key={self.api_key}&method=userrecaptcha&googlekey={self.data_sitekey}&pageurl={self.page_url}&json=1&invisible=1"
+        r1 = requests.get(u1)
+        print(r1.json())
+        rid = r1.json().get("request")
+        u2 = f"https://rucaptcha.com/res.php?key={self.api_key}&action=get&id={int(rid)}&json=1"
+        time.sleep(5)
+        while True:
+            r2 = requests.get(u2)
+            print(r2.json())
+            if r2.json().get("status") == 1:
+                form_token = r2.json().get("request")
+                break
+            time.sleep(5)
+        print(form_token)
+        write_token_js = f'document.getElementById("g-recaptcha-response").innerHTML="{form_token}";'
+        self.driver.execute_script(write_token_js)
+        time.sleep(3)
+
     def __del__(self):
         print(f'Закрываю аккаунт {self.login}')
-        self.driver.quit()
+        # self.driver.quit()
 
 
 if __name__ == '__main__':
     with open('accounts.csv', newline='') as file:
-        accounts = csv.reader(file, delimiter='\t')
+        accounts = csv.reader(file, delimiter=';')
         for login, password in accounts:
             print(f'Захожу на {login}')
             account = PwAccount(login, password)
             account.login_to_pw_site()
-            account.activate_promo(['NEWMODELS2021', 'MYGAMES2BDAY', 'PW13BIRTHDAY'])
-            del account
+            account.finish_register()
+            account.recaptcha_solver()
+            time.sleep(1000)
