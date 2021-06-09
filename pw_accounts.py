@@ -52,8 +52,8 @@ class PwAccount:
                 pass
 
         self._login_third_window()  # третье окно закрыто, продолжаем
-
-        time.sleep(2)
+        self.driver.implicitly_wait(10)
+        # time.sleep(2)
         self.driver.switch_to.window(self.driver.window_handles[1])
         try:
             checkbox = self.driver.find_element_by_xpath(
@@ -63,7 +63,8 @@ class PwAccount:
                 try:
                     continue_button = self.driver.find_element_by_xpath("//button[contains(text(),'Продолжить')]")
                     continue_button.click()
-                    time.sleep(1)
+                    self.driver.implicitly_wait(10)
+                    # time.sleep(1)
                     break
                 except ElementClickInterceptedException:
                     pass
@@ -73,13 +74,15 @@ class PwAccount:
             try:
                 continue_button = self.driver.find_element_by_xpath("//button[contains(text(),'Продолжить')]")
                 continue_button.click()
-                time.sleep(2)
+                self.driver.implicitly_wait(10)
+                # time.sleep(2)
                 break
             except ElementClickInterceptedException:
                 pass
             except NoSuchElementException:
                 pass
-        time.sleep(2)
+        self.driver.implicitly_wait(10)
+        # time.sleep(2)
         try:
             self.driver.switch_to.window(self.driver.window_handles[0])
             checkbox = self.driver.find_element_by_xpath("//body/div[7]/div[2]/div[2]/div[1]/p[2]/label[1]")
@@ -90,7 +93,8 @@ class PwAccount:
             pass
         except NoSuchElementException:
             pass
-        time.sleep(0.5)
+        self.driver.implicitly_wait(10)
+        # time.sleep(0.5)
 
     def _login_third_window(self):
         self._third_switch_to_window()
@@ -124,17 +128,21 @@ class PwAccount:
     def _third_press_allow_button(self):
         while True:
             if len(self.driver.window_handles) >= 3:  # окно не закрылось после нажатия на Войти
-                time.sleep(1)
+                self.driver.implicitly_wait(10)
+                # time.sleep(1)
                 try:
                     ok_button = self.driver.find_element_by_xpath(
                         "//body/div[@id='root']/div[1]/div[2]/div[3]/div[3]/div[1]/button[1]")
                     ok_button.click()
-                    time.sleep(2)
+                    self.driver.implicitly_wait(10)
+                    # time.sleep(2)
                     break
                 except NoSuchWindowException:
                     pass
                 except AttributeError:
                     pass
+                except NoSuchElementException:
+                    print('Что-то пошло не так')
             else:
                 break
 
@@ -142,7 +150,8 @@ class PwAccount:
         while True:
             if len(self.driver.window_handles) >= 3:
                 print('Окно почему-то не закрылось, жду закрытия окна')
-                time.sleep(1)
+                self.driver.implicitly_wait(10)
+                # time.sleep(1)
             else:
                 break
 
