@@ -1,12 +1,18 @@
-import csv
 import os
 import random
 import string
 import time
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, WebDriverException, \
-    SessionNotCreatedException
+    SessionNotCreatedException, TimeoutException
+import os
+import sys
 
+from PIL import Image
+from twocaptcha import TwoCaptcha
+
+api_key = os.getenv('APIKEY_2CAPTCHA')
+solver = TwoCaptcha(api_key)
 CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver.exe'
 proxy_list = [
     '194.67.215.166:9434',      # до 7 июля~
@@ -30,7 +36,6 @@ proxy_list = [
     '188.130.186.38:3000',      # до 11 июля
     '46.8.213.90:3000',         # до 11 июля
 ]
-proxy_list = [proxy.replace('\t', ':').replace(' ', ':').replace(';', ':') for proxy in proxy_list]
 
 
 def account_generator():
@@ -70,7 +75,31 @@ class PwAccount:
         except (WebDriverException, AttributeError):
             return False
         self.delay()
+        if self.driver.current_url == 'https://pw.mail.ru/validate/?ref_url=pw.mail.ru':
+            print('Попали на Мэил капчу')
+            self.driver.save_screenshot(f'driver_screens/{self.login}.png')
+
+            img = Image.open(f'driver_screens/{self.login}.png')
+            area = (38, 168, 264, 245)
+            cropped_img = img.crop(area)
+            cropped_img.save(f'captcha_screens/{self.login}.png')
+
+            try:
+                result = solver.normal(f'captcha_screens/{self.login}.png')
+            except Exception as e:
+                print(e)
+                print('Какая-то ошибка в отправке капчи, хз')
+                return False
+            else:
+                response_to_captcha = result['code']
+                print(response_to_captcha)
+                result_captcha_field = self.driver.find_element_by_name('captcha_input')
+                result_captcha_field.click()
+                result_captcha_field.send_keys(response_to_captcha)
+                ok_button = self.driver.find_element_by_id('validate_form_submit')
+                ok_button.click()
         try:
+            self.delay()
             self.driver.find_element_by_xpath("//a[contains(text(),'Регистрация')]").click()
         except NoSuchElementException:
             return False
@@ -104,9 +133,12 @@ class PwAccount:
         time.sleep(3)
         # активируем кнопку "Зарегистрироваться"
         self.delay()
-        self.driver.execute_script("""
+        try:
+            self.driver.execute_script("""
                             var elems = document.querySelectorAll(".oauth_modal_button");
                             [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
+        except TimeoutException:
+            return False
         self.delay()
         try:
             self.driver.find_element_by_xpath("//div[contains(text(),'Зарегистрироваться')]").click()
