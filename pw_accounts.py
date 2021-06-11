@@ -34,6 +34,8 @@ class PwAccount:
     def login_to_pw_site(self):
         self.driver.get(PW_URL)  # открываем сайт ПВ в Chrome
         self.driver.find_element_by_class_name('enter').click()  # тыкаем Войти
+        # self.driver.find_element_by_xpath("//a[contains(text(),'Регистрация')]").click()  # тыкаем Войти
+
         self._login_second_window()
 
     def _login_second_window(self):
@@ -47,7 +49,6 @@ class PwAccount:
         while True:  # вводим логин и ждём, пока поле "Пароль" пропадёт
             try:
                 self.driver.implicitly_wait(10)
-                self.driver.launch_app()
                 login_field = self.driver.find_elements_by_tag_name('input')[0]
                 login_field.send_keys(self.login)
                 password_field = self.driver.find_elements_by_tag_name('input')[1]
@@ -179,27 +180,8 @@ class PwAccount:
     def finish_register(self):
         print('Завершаю регистрацию, жду')
         self.driver.implicitly_wait(10)
-        self.driver.find_element_by_xpath("//label[contains(text(),'Я соглашаюсь получать новости, рассылки об акциях ')]").click()
-        self.driver.find_element_by_xpath("//body/div[6]/div[2]/div[2]/div[1]/p[2]/label[1]").click()
-
-    def recaptcha_solver(self):
-        u1 = f"https://rucaptcha.com/in.php?key={self.api_key}&method=userrecaptcha&googlekey={self.data_sitekey}&pageurl={self.page_url}&json=1&invisible=1"
-        r1 = requests.get(u1)
-        print(r1.json())
-        rid = r1.json().get("request")
-        u2 = f"https://rucaptcha.com/res.php?key={self.api_key}&action=get&id={int(rid)}&json=1"
-        time.sleep(5)
-        while True:
-            r2 = requests.get(u2)
-            print(r2.json())
-            if r2.json().get("status") == 1:
-                form_token = r2.json().get("request")
-                break
-            time.sleep(5)
-        print(form_token)
-        write_token_js = f'document.getElementById("g-recaptcha-response").innerHTML="{form_token}";'
-        self.driver.execute_script(write_token_js)
-        time.sleep(3)
+        self.driver.execute_script("$('.oauth_modal_button').removeClass('disabled');")
+        self.driver.implicitly_wait(10)
 
     def __del__(self):
         print(f'Закрываю аккаунт {self.login}')
@@ -214,5 +196,5 @@ if __name__ == '__main__':
             account = PwAccount(login, password)
             account.login_to_pw_site()
             account.finish_register()
-            account.recaptcha_solver()
+            # account.recaptcha_solver()
             time.sleep(1000)
