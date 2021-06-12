@@ -2,6 +2,8 @@ import os
 import random
 import string
 import time
+from collections import Counter
+
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, WebDriverException, \
     SessionNotCreatedException, TimeoutException
@@ -169,18 +171,25 @@ class PwAccount:
 
     def __del__(self):
         print(f'[-] закрываю окно {self.login}')
-        self.driver.quit()
+        try:
+            self.driver.quit()
+        except AttributeError:
+            pass
 
 
 if __name__ == '__main__':
     i = 0
+    bad_proxies_counter = Counter()
     while True:
         login, password = account_generator()
-        account = PwAccount(login, password, random.choice(proxy_list))
+        proxy = random.choice(proxy_list)
+        account = PwAccount(login, password, proxy)
         if account.register_account():
             print(f'[+] {login} зарегистрирован')
             i += 1
         else:
+            bad_proxies_counter[proxy] += 1
             print(f'[-] {login} не зарегистрирован')
+            print(bad_proxies_counter.most_common(20))
         del account
         print(f'[INFO] Зарегистрировано {i} аккаунтов')
