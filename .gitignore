@@ -1,5 +1,2 @@
 /venv/
-/accounts.csv
-/accounts.xlsx
-/accounts.txt
-/new_accounts.txt
+*.txt
