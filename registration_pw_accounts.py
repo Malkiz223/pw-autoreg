@@ -1,4 +1,3 @@
-import random
 import os
 import random
 import string
@@ -16,15 +15,6 @@ solver = TwoCaptcha(api_key)
 CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver.exe'
 proxy_list = [
     '194.67.215.166:9434',  # до 7 июля~
-    '194.156.105.232:59704',  # до 15 июня~
-    '45.139.52.130:47490',  # до 15 июня~
-    '45.152.116.197:57991',  # до 15 июня~
-    '45.93.15.181:57875',  # до 15 июня~
-    '45.132.129.171:59146',  # до 15 июня~
-    '193.187.106.207:45124',  # до 15 июня~
-    '45.139.52.19:45854',  # до 15 июня~
-    '109.196.172.207:53402',  # до 15 июня~
-    '45.152.116.126:56394',  # до 15 июня~
     '31.40.203.35:3000',  # до 11 июля
     '188.130.143.229:3000',  # до 11 июля
     '109.248.14.81:3000',  # до 11 июля
@@ -75,17 +65,17 @@ def account_generator():
         login_list.append(random.choice(string.ascii_lowercase))
     for _ in range(random.randint(9, 13)):
         password_list.append(random.choice(string.ascii_letters + string.digits))
-    service = random.choice(['@yandex.ru', '@gmail.com', '@narod.ru', '@ya.ru'])
+    service = random.choice(['@yandex.ru', '@gmail.com', '@ya.ru'])
     result = ''.join(login_list) + service, ''.join(password_list)
     return result
 
 
 class PwAccount:
-    def __init__(self, account_login, account_password, proxy):
+    def __init__(self, account_login, account_password, account_proxy):
         global proxy_list
         self.login = account_login.lower()
         self.password = account_password
-        self.proxy = proxy
+        self.proxy = account_proxy
         self.options = webdriver.ChromeOptions()
         self.options.add_argument('--disable-blink-features=AutomationControlled')
         self.options.add_argument('--headless')
@@ -133,8 +123,11 @@ class PwAccount:
             self.driver.find_element_by_xpath("//a[contains(text(),'Регистрация')]").click()
         except NoSuchElementException:
             return False
-        self.delay()
-        self.driver.switch_to.window(self.driver.window_handles[1])  # открывается второе окно
+        try:
+            self.delay()
+            self.driver.switch_to.window(self.driver.window_handles[1])  # открывается второе окно
+        except IndexError:
+            return False
         try:
             self.delay()
             self.driver.find_element_by_name('email').send_keys(self.login)
