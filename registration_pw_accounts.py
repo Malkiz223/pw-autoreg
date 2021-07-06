@@ -14,7 +14,6 @@ api_key = os.getenv('APIKEY_2CAPTCHA')
 solver = TwoCaptcha(api_key)
 CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver.exe'
 proxy_list = [
-    '194.67.215.166:9434',  # до 7 июля~
     '31.40.203.35:3000',  # до 11 июля
     '188.130.143.229:3000',  # до 11 июля
     '109.248.14.81:3000',  # до 11 июля
@@ -133,7 +132,7 @@ class PwAccount:
             self.driver.find_element_by_name('email').send_keys(self.login)
             time.sleep(0.2)
             self.driver.find_element_by_name('password').send_keys(self.password)
-        except NoSuchElementException:
+        except (NoSuchElementException, WebDriverException):
             return False
         # вводим пароль и активируем кнопку "Далее"
         self.driver.execute_script(
