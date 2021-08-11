@@ -49,8 +49,8 @@ class PwAccount:
         self.page_url = 'https://pw.mail.ru/'
         try:
             self.driver = webdriver.Chrome(executable_path=CHROME_PATH, options=self.options)
-        except (SessionNotCreatedException, WebDriverException):
-            pass
+        except (SessionNotCreatedException, WebDriverException) as e:
+            print(e)
 
     def delay(self, wait_time=10):
         self.driver.implicitly_wait(wait_time)
@@ -59,7 +59,8 @@ class PwAccount:
         print(f'[INFO] Начинаем регистрацию аккаунта {self.login}')
         try:
             self.driver.get(self.page_url)
-        except (WebDriverException, AttributeError):
+        except (WebDriverException, AttributeError) as e:
+            print(e)
             return False
         self.delay()
 
