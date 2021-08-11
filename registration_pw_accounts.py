@@ -3,6 +3,7 @@ import random
 import string
 import time
 from collections import Counter
+from sys import platform
 
 import selenium.common.exceptions
 from PIL import Image
@@ -13,7 +14,11 @@ from twocaptcha import TwoCaptcha
 
 api_key = os.getenv('APIKEY_2CAPTCHA')
 solver = TwoCaptcha(api_key)
-CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver.exe'
+
+if platform == 'win32':
+    CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver.exe'
+elif platform == 'linux':
+    CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver'
 proxy_list = [
     '185.181.244.105:3000',  # до 9 августа
 ]
@@ -173,6 +178,7 @@ class PwAccount:
             result_captcha_field.send_keys(response_to_captcha)
             ok_button = self.driver.find_element_by_id('validate_form_submit')
             ok_button.click()
+        return True
 
     def __del__(self):
         print(f'[-] закрываю окно {self.login}')
