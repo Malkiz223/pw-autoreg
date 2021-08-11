@@ -18,7 +18,7 @@ solver = TwoCaptcha(api_key)
 if platform == 'win32':
     CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver.exe'
 elif platform == 'linux':
-    CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver'
+    CHROME_PATH = os.path.abspath(os.getcwd()) + '/chromedriver'
 proxy_list = [
     '185.181.244.105:3000',  # до 9 августа
 ]
