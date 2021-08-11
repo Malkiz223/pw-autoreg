@@ -4,6 +4,7 @@ import string
 import time
 from collections import Counter
 
+import selenium.common.exceptions
 from PIL import Image
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, WebDriverException, \
@@ -50,44 +51,29 @@ class PwAccount:
         self.driver.implicitly_wait(wait_time)
 
     def register_account(self):
+        print(f'[INFO] Начинаем регистрацию аккаунта {self.login}')
         try:
             self.driver.get(self.page_url)
         except (WebDriverException, AttributeError):
             return False
         self.delay()
+
         if self.driver.current_url == 'https://pw.mail.ru/validate/?ref_url=pw.mail.ru':
             print('Попали на Мэил капчу')
-            self.driver.save_screenshot(f'driver_screens/{self.login}.png')
+            self._solve_mailru_captcha()
 
-            img = Image.open(f'driver_screens/{self.login}.png')
-            area = (38, 168, 264, 245)
-            cropped_img = img.crop(area)
-            cropped_img.save(f'captcha_screens/{self.login}.png')
-
-            try:
-                result = solver.normal(f'captcha_screens/{self.login}.png')
-            except Exception as e:
-                print(e)
-                print('Какая-то ошибка в отправке капчи, хз')
-                return False
-            else:
-                response_to_captcha = result['code']
-                print(response_to_captcha)
-                result_captcha_field = self.driver.find_element_by_name('captcha_input')
-                result_captcha_field.click()
-                result_captcha_field.send_keys(response_to_captcha)
-                ok_button = self.driver.find_element_by_id('validate_form_submit')
-                ok_button.click()
         try:
             self.delay()
             self.driver.find_element_by_xpath("//a[contains(text(),'Регистрация')]").click()
         except NoSuchElementException:
             return False
+
         try:
             self.delay()
             self.driver.switch_to.window(self.driver.window_handles[1])  # открывается второе окно
         except IndexError:
             return False
+
         try:
             self.delay()
             self.driver.find_element_by_name('email').send_keys(self.login)
@@ -95,13 +81,20 @@ class PwAccount:
             self.driver.find_element_by_name('password').send_keys(self.password)
         except (NoSuchElementException, WebDriverException):
             return False
-        # вводим пароль и активируем кнопку "Далее"
+
+        # вводим пароль и активируем кнопку "Зарегистрироваться"
         self.driver.execute_script(
             """var button_next = document.getElementsByClassName("ph-form__btn ph-btn gtm_reg_btn");
             for (var i = 0; i < button_next.length; i++) {button_next[i].removeAttribute("disabled");}"""
         )
         self.delay()
-        self.driver.find_element_by_xpath("//body/div[2]/div[1]/div[1]/form[1]/div[2]/div[3]").click()  # Далее
+        try:
+            self.driver.find_element_by_xpath(
+                "/html/body/div[2]/div/div/div/form/div[1]/div[4]").click()  # Зарегистрироваться
+        except selenium.common.exceptions.InvalidSelectorException:
+            print('[ERROR] какая-то проблема с кнопкой "Зарегистрироваться"')
+            return False
+
         try:
             self.delay(5)
             self.driver.find_element_by_xpath("//button[contains(text(),'Продолжить')]").click()
@@ -116,6 +109,7 @@ class PwAccount:
                 return False
         except StaleElementReferenceException:
             return False
+
         # зарегистрировались - возвращаемся к первому окну и создаём аккаунт
         self.driver.switch_to.window(self.driver.window_handles[0])
         time.sleep(3)
@@ -127,13 +121,15 @@ class PwAccount:
                             [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
         except TimeoutException:
             return False
-        self.delay()
+
         try:
+            self.delay()
             self.driver.find_element_by_xpath("//div[contains(text(),'Зарегистрироваться')]").click()
         except (StaleElementReferenceException, NoSuchElementException):
             return False
-        self.delay()
+
         try:
+            self.delay()
             self.driver.find_element_by_xpath("//a[contains(text(),'Мой кабинет')]")
             with open('new_accounts.txt', 'a') as accounts_file:
                 accounts_file.write('\t'.join([self.login, self.password, self.proxy]) + '\n')
@@ -155,6 +151,29 @@ class PwAccount:
         self.delay()
         self.driver.find_element_by_xpath("//button[contains(text(),'Продолжить')]").click()
 
+    def _solve_mailru_captcha(self):
+        self.driver.save_screenshot(f'driver_screens/{self.login}.png')
+
+        img = Image.open(f'driver_screens/{self.login}.png')
+        area = (38, 168, 264, 245)
+        cropped_img = img.crop(area)
+        cropped_img.save(f'captcha_screens/{self.login}.png')
+
+        try:
+            result = solver.normal(f'captcha_screens/{self.login}.png')
+        except Exception as e:
+            print(e)
+            print('Какая-то ошибка в отправке капчи, хз')
+            return False
+        else:
+            response_to_captcha = result['code']
+            print(response_to_captcha)
+            result_captcha_field = self.driver.find_element_by_name('captcha_input')
+            result_captcha_field.click()
+            result_captcha_field.send_keys(response_to_captcha)
+            ok_button = self.driver.find_element_by_id('validate_form_submit')
+            ok_button.click()
+
     def __del__(self):
         print(f'[-] закрываю окно {self.login}')
         try:
@@ -164,7 +183,7 @@ class PwAccount:
 
 
 if __name__ == '__main__':
-    i = 0
+    accounts_counter = 0
     bad_proxies_counter = Counter()
     while True:
         login, password = account_generator()
@@ -172,10 +191,10 @@ if __name__ == '__main__':
         account = PwAccount(login, password, proxy)
         if account.register_account():
             print(f'[+] {login} зарегистрирован')
-            i += 1
+            accounts_counter += 1
         else:
             bad_proxies_counter[proxy] += 1
             print(f'[-] {login} не зарегистрирован')
             print(bad_proxies_counter.most_common(20))
         del account
-        print(f'[INFO] Зарегистрировано {i} аккаунтов')
+        print(f'[INFO] Зарегистрировано аккаунтов: {accounts_counter}')
