@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  selenium:
+    image: selenium/standalone-chrome
+    shm_size: 2g
+    environment:
+      - START_XVFB=false
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_MAX_SESSIONS=16
+    ports:
+      - "4444:4444"
+    restart: always
+    networks:
+      - selenium_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: python-bot
+    restart: always
+    volumes:
+      - ./app/accounts:/app/accounts
+    command: sh -c "python3 registration_pw_accounts.py"
+    depends_on:
+      - selenium
+    networks:
+      - selenium_network
+
+networks:
+  selenium_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.65.0.0/16
