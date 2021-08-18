@@ -13,6 +13,7 @@ from selenium.webdriver import DesiredCapabilities
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 from captcha_solver import solve_mailru_captcha
+from proxy_list import proxy_list
 
 logging.getLogger('selenium').setLevel('CRITICAL')
 logging.getLogger('urllib3').setLevel('CRITICAL')
@@ -31,10 +32,6 @@ else:
     elif platform == 'linux':
         CHROME_PATH = os.path.abspath(os.getcwd()) + '/chromedriver'
 
-proxy_list = [
-    '185.181.244.105:3000',  # до 9 сентября
-]
-
 
 def account_generator():
     login_list = []
@@ -50,7 +47,6 @@ def account_generator():
 
 class PwAccount:
     def __init__(self, account_login, account_password, account_proxy):
-        global proxy_list
         self.login = account_login.lower()
         self.password = account_password
         self.proxy = account_proxy
