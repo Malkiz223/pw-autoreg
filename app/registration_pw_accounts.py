@@ -3,7 +3,6 @@ import os
 import random
 import string
 import time
-from collections import Counter
 from sys import platform
 
 from selenium import webdriver
@@ -43,6 +42,26 @@ def account_generator():
     service = random.choice(['@yandex.ru', '@gmail.com', '@ya.ru'])
     result = ''.join(login_list) + service, ''.join(password_list)
     return result
+
+
+def get_proxy_dict_from_list():
+    proxy_dict = dict()
+    for proxy in proxy_list:
+        proxy_dict[proxy] = {'good_registrations': 0, 'bad_registrations': 0}
+    return proxy_dict
+
+
+def current_proxy_status(proxy: str, proxy_status_dict: dict):
+    proxy_without_port = proxy.split(':')[0]
+    good_registrations = proxy_status_dict[proxy]['good_registrations']
+    bad_registrations = proxy_status_dict[proxy]['bad_registrations']
+    total_registrations = good_registrations + bad_registrations
+    success_rate = good_registrations / total_registrations * 100
+    return f'{proxy_without_port}:\t{good_registrations}/{total_registrations}\t[{success_rate:.2f}% success]'
+
+
+# TODO если выпал прокси - не брать его N минут и идти дальше (не спать 5 минут). Сделать на Редисе?
+# TODO складывать аккаунты в базу/Редис?
 
 
 class PwAccount:
@@ -222,17 +241,21 @@ class PwAccount:
 
 
 if __name__ == '__main__':
-    accounts_counter = 0
-    bad_proxies_counter = Counter()
+    registration_iterations = 0
+    successful_registrations = 0
+    proxy_dict = get_proxy_dict_from_list()
+
     while True:
         login, password = account_generator()
         proxy = random.choice(proxy_list)
         account = PwAccount(login, password, proxy)
         if account.register_account():
-            accounts_counter += 1
+            successful_registrations += 1
+            proxy_dict[proxy]['good_registrations'] += 1
         else:
-            bad_proxies_counter[proxy] += 1
+            proxy_dict[proxy]['bad_registrations'] += 1
             logger.info(f'Аккаунт не зарегистрирован')
-            logger.error(bad_proxies_counter.most_common(20))
+            logger.info(current_proxy_status(proxy, proxy_dict))
         del account
-        logger.info(f'Зарегистрировано аккаунтов: {accounts_counter}')
+        registration_iterations += 1
+        logger.info(f'Попыток: {registration_iterations}. Зарегистрировано: {successful_registrations}')
