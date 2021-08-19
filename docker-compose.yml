@@ -5,9 +5,11 @@ services:
     image: selenium/standalone-chrome
     shm_size: 2g
     environment:
-      - START_XVFB=false
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_NODE_MAX_SESSIONS=16
+      - START_XVFB=false  # для --headless-режиме можно поставить в false
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true  # позволяет запустить больше сессий на одной ноде селениума
+      - SE_NODE_MAX_SESSIONS=16  # поставил по количеству потоков процессора
+      - JAVA_OPTS=-Dselenium.LOGGER.level=WARNING  # должно отключать логи селениума, но не работает?
+      - JAVA_OPTS=-Dwebdriver.chrome.whitelistedIps= # должно убирать спам в логи с сообщением [99]
     ports:
       - "4444:4444"
     restart: always
