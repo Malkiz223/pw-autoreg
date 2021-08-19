@@ -129,17 +129,18 @@ class PwAccount:
             self.delay()
             self.driver.get(self.pw_main_page_url)
             logger.debug('Открыли главную страницу PW')
-        except (WebDriverException, AttributeError) as e:
-            logger.error(f'Ошибка в открытии главной страницы PW: {e}')
+        except (WebDriverException, AttributeError):
+            logger.error(f'Ошибка в открытии главной страницы PW')
             raise
 
     def _click_main_register_button(self):
         try:
             self.delay()
             self.driver.find_element_by_xpath("//a[contains(text(),'Регистрация')]").click()
-            logger.debug('Нажали кнопку "Регистрация"')
-        except NoSuchElementException as e:
-            logger.error(f'Не смогли нажать на кнопку "Регистрация": {e}')
+            logger.debug('Нажали кнопку "Регистрация" на главной странице')
+        except NoSuchElementException:
+            logger.error(f'Отсутствует кнопка "Регистрация" на главной странице')
+            self.save_error_screenshot('missing_registration_button')
             raise
 
     def _switch_to_window(self, window_index):
@@ -147,8 +148,8 @@ class PwAccount:
             self.delay()
             self.driver.switch_to.window(self.driver.window_handles[window_index])  # открывается второе окно
             logger.debug(f'Переключились на окно с индексом {window_index}')
-        except (IndexError, WebDriverException) as e:
-            logger.error(f'Не смогли переключиться на окно с индексом {window_index}: {e}')
+        except (IndexError, WebDriverException):
+            logger.error(f'Не смогли переключиться на окно с индексом {window_index}')
             raise
 
     def _enter_login_and_password(self):
@@ -158,8 +159,9 @@ class PwAccount:
             time.sleep(0.2)
             self.driver.find_element_by_name('password').send_keys(self.password)
             logger.debug(f'Ввели логин и пароль от аккаунта: {self.login} {self.password}')
-        except (NoSuchElementException, WebDriverException) as e:
-            logger.error(f'Не смогли ввести логин и пароль от аккаунта: {e}')
+        except (NoSuchElementException, WebDriverException):
+            logger.error(f'Не смогли ввести логин и пароль от аккаунта')
+            self.save_error_screenshot('missing_login_and_password_fields')
             raise
 
     def _press_registration_button(self):
@@ -175,15 +177,16 @@ class PwAccount:
             self.driver.find_element_by_xpath("//button[contains(text(),'Зарегистрироваться')]").click()
             logger.debug('Попробовали нажать кнопку "Зарегистрироваться" в MY.GAMES')
             return True
-        except (InvalidSelectorException, NoSuchElementException) as e:
-            logger.debug(f'Не смогли нажать на кнопку "Зарегистрироваться" в MY.GAMES: {e}')
+        except (InvalidSelectorException, NoSuchElementException):
+            logger.debug(f'Не смогли нажать на кнопку "Зарегистрироваться" в MY.GAMES')
         try:
             self.delay(2)
             self.driver.find_element_by_xpath("//button[contains(text(),'Регистрация')]").click()  # Регистрация
             logger.debug('Нажали на кнопку "Регистрация" в MY.GAMES')
             return True
-        except (InvalidSelectorException, NoSuchElementException) as e:
-            logger.error(f'Не смогли нажать на кнопку "Регистрация" в MY.GAMES: {e}')
+        except (InvalidSelectorException, NoSuchElementException):
+            logger.error(f'Не смогли нажать на кнопку "Регистрация" в MY.GAMES')
+            self.save_error_screenshot('missing_mygames_registration_button')
 
     def _press_continue_button(self):
         try:
