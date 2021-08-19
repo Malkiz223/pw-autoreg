@@ -14,13 +14,14 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 from captcha_solver import solve_mailru_captcha
 from proxy_list import proxy_list
 
+# логирование
 logging.getLogger('selenium').setLevel('CRITICAL')
 logging.getLogger('urllib3').setLevel('CRITICAL')
-
 log_level = os.getenv('LOG_LEVEL', 'INFO')
 logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
+# параметры запуска Selenium
 DOCKER = os.getenv('DOCKER')
 if DOCKER:
     SELENIUM_URL = "http://selenium:4444/wd/hub"
