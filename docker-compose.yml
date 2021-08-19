@@ -17,6 +17,8 @@ services:
   pw-registration-bot:
     image: malkiz/pw-registration-bot
     restart: always
+    deploy:
+      replicas: 10
     volumes:
       - ./app/accounts:/app/accounts
     command: sh -c "python3 registration_pw_accounts.py"
