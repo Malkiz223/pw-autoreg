@@ -15,25 +15,27 @@ logger = logging.getLogger(__name__)
 
 
 def solve_mailru_captcha(driver, login):
-    logger.info('Попали на капчу mail.ru')
-    driver.save_screenshot(f'driver_screens/{login}.png')
+    if not os.path.exists('screenshots/captcha/'):
+        os.mkdir('screenshots/captcha/')
+    screenshot_name = f'screenshots/captcha/{login}.png'
 
-    img = Image.open(f'driver_screens/{login}.png')
+    logger.info('Попали на капчу mail.ru')
+    driver.save_screenshot(screenshot_name)  # делаем скриншот окна браузера
+    img = Image.open(screenshot_name)  # открываем скриншот через Pillow
     area = (38, 168, 264, 245)
     cropped_img = img.crop(area)
-    cropped_img.save(f'captcha_screens/{login}.png')
-
+    cropped_img.save(screenshot_name)  # вырезаем кусочек с капчей и сохраняем обратно на диск
     try:
-        result = solver.normal(f'captcha_screens/{login}.png')
+        response_solver: dict = solver.normal(screenshot_name)
     except Exception as e:
         logger.error(f'Какая-то ошибка в модуле решения капчи: {e}')
-
-        return False
+        raise
     else:
-        response_to_captcha = result['code']
-        result_captcha_field = driver.find_element_by_name('captcha_input')
-        result_captcha_field.click()
-        result_captcha_field.send_keys(response_to_captcha)
+        captcha_code = response_solver['code']
+        captcha_field = driver.find_element_by_name('captcha_input')
+        captcha_field.click()
+        captcha_field.send_keys(captcha_code)
         ok_button = driver.find_element_by_id('validate_form_submit')
         ok_button.click()
+        logger.info('Успешно решили капчу mail.ru')
     return True
