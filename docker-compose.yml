@@ -23,6 +23,7 @@ services:
       replicas: 10
     volumes:
       - ./app/accounts:/app/accounts
+      - ./app/screenshots:/app/screenshots
     command: sh -c "python3 registration_pw_accounts.py"
     depends_on:
       - selenium
