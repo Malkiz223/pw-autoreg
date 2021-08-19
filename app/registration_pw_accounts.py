@@ -77,9 +77,6 @@ class PwAccount:
         self.page_url = 'https://pw.mail.ru/'
         self.driver = self._get_selenium_webdriver()
 
-    def delay(self, wait_time=10):
-        self.driver.implicitly_wait(wait_time)
-
     def register_account(self):
         try:
             self._open_pw_main_page()
@@ -97,7 +94,33 @@ class PwAccount:
             self._press_final_register_button()
         except RuntimeError:
             return False
-        return self._check_registration_status()
+
+    def delay(self, wait_time=10):
+        self.driver.implicitly_wait(wait_time)
+
+    def save_error_screenshot(self, error_short_description='error'):
+        screenshot_folder_error = 'screenshots/errors/'
+        screenshot_name = f'{error_short_description}-{self.login}.png'
+
+        if not os.path.exists(screenshot_folder_error):
+            os.mkdir(screenshot_folder_error)
+        self.driver.save_screenshot(screenshot_folder_error + screenshot_name)
+        logger.info(f'Скриншот {screenshot_name} сохранён в папку {screenshot_folder_error}')
+
+    def _get_selenium_webdriver(self):
+        try:
+            if DOCKER:
+                driver = webdriver.Remote(SELENIUM_URL,
+                                          desired_capabilities=DesiredCapabilities.CHROME, options=self.options)
+            else:
+                driver = webdriver.Chrome(executable_path=CHROME_PATH, options=self.options)
+            return driver
+        except (SessionNotCreatedException, WebDriverException):
+            logger.error(f'Не смогли получить webdriver')
+            raise
+        except (NewConnectionError, MaxRetryError):
+            logger.error(f'Selenium не готов')
+            time.sleep(1)
 
     def _open_pw_main_page(self):
         try:
@@ -239,6 +262,13 @@ class PwAccount:
                 logger.critical(f'Новая ошибка: {error_message}')
         except NoSuchElementException:
             logger.debug('Ошибок регистрации нет, идём дальше')
+
+    def __del__(self):
+        try:
+            self.driver.quit()
+            logger.debug(f'Закрыли браузер у аккаунта {self.login}')
+        except AttributeError:
+            logger.debug(f'Не смогли закрыть браузер у окна {self.login}')
 
 
 if __name__ == '__main__':
