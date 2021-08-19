@@ -74,7 +74,7 @@ class PwAccount:
         self.options.add_argument('--disable-blink-features=AutomationControlled')
         self.options.add_argument('--headless')
         self.options.add_argument(f'--proxy-server={self.proxy}')
-        self.page_url = 'https://pw.mail.ru/'
+        self.pw_main_page_url = 'https://pw.mail.ru/'
         self.driver = self._get_selenium_webdriver()
 
     def register_account(self):
@@ -92,7 +92,9 @@ class PwAccount:
             self._switch_to_window(0)
             time.sleep(3)
             self._press_final_register_button()
-        except RuntimeError:
+            self._check_registration_status()
+            return True
+        except Exception:
             return False
 
     def delay(self, wait_time=10):
@@ -125,7 +127,7 @@ class PwAccount:
     def _open_pw_main_page(self):
         try:
             self.delay()
-            self.driver.get(self.page_url)
+            self.driver.get(self.pw_main_page_url)
             logger.debug('Открыли главную страницу PW')
         except (WebDriverException, AttributeError) as e:
             logger.error(f'Ошибка в открытии главной страницы PW: {e}')
@@ -162,6 +164,7 @@ class PwAccount:
 
     def _press_registration_button(self):
         # активируем кнопку "Регистрация"
+        self.delay()
         self.driver.execute_script(
             """var button_next = document.getElementsByClassName("ph-form__btn ph-btn gtm_reg_btn");
             for (var i = 0; i < button_next.length; i++) {button_next[i].removeAttribute("disabled");}""")
@@ -196,6 +199,7 @@ class PwAccount:
                 pass
         except StaleElementReferenceException:
             logger.error('Какая-то проблема с кнопкой "Продолжить"')
+            self.save_error_screenshot('missing_continue_button')
             raise
 
     def _press_final_register_button(self):
@@ -214,6 +218,7 @@ class PwAccount:
             logger.debug('Нажали кнопку финальную кнопку "Зарегистрироваться"')
         except (StaleElementReferenceException, NoSuchElementException):
             logger.error('Не смогли нажать на финальную кнопку "Зарегистрироваться"')
+            self.save_error_screenshot('missing_final_registration_button')
             raise
 
     def _check_registration_status(self):
@@ -223,32 +228,10 @@ class PwAccount:
             with open('accounts/accounts.txt', 'a') as accounts_file:
                 accounts_file.write('\t'.join([self.login, self.password, self.proxy]) + '\n')
             logger.debug(f'Зарегистрировали аккаунт {self.login} и сохранили в базу')
-            return True
-        except Exception as e:
-            logger.error(f'Какая-то ошибка в проверке регистрации аккаунта: {e}')
-            return False
-
-    def _get_selenium_webdriver(self):
-        try:
-            if DOCKER:
-                driver = webdriver.Remote(SELENIUM_URL,
-                                          desired_capabilities=DesiredCapabilities.CHROME, options=self.options)
-            else:
-                driver = webdriver.Chrome(executable_path=CHROME_PATH, options=self.options)
-            return driver
-        except (SessionNotCreatedException, WebDriverException) as e:
-            logger.error(f'Не смогли получить webdriver: {e}')
+        except NoSuchElementException:
+            logger.error(f'Отсутствует кнопка "Мой кабинет"')
+            self.save_error_screenshot('missing_my_cabinet_button')
             raise
-        except (NewConnectionError, MaxRetryError):
-            logger.error(f'Selenium ещё не готов?')
-            time.sleep(1)
-
-    def __del__(self):
-        try:
-            self.driver.quit()
-            logger.debug(f'Закрыли браузер у аккаунта {self.login}')
-        except AttributeError:
-            logger.debug(f'Не смогли закрыть браузер у окна {self.login}')
 
     def _check_has_error(self):
         try:
