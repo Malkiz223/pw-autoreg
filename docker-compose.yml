@@ -22,9 +22,8 @@ services:
     deploy:
       replicas: 10
     volumes:
-      - ./app/accounts:/app/accounts
-      - ./app/screenshots:/app/screenshots
-    command: sh -c "python3 registration_pw_accounts.py"
+      - /app/accounts:/app/accounts
+      - /app/screenshots:/app/screenshots
     depends_on:
       - selenium
     networks:
