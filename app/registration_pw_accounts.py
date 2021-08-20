@@ -51,10 +51,10 @@ def account_generator():
 
 
 def get_proxy_dict_from_list():
-    proxy_dict = dict()
-    for proxy in proxy_list:
-        proxy_dict[proxy] = {'good_registrations': 0, 'bad_registrations': 0}
-    return proxy_dict
+    _proxy_dict = dict()
+    for _proxy in proxy_list:
+        _proxy_dict[_proxy] = {'good_registrations': 0, 'bad_registrations': 0}
+    return _proxy_dict
 
 
 def current_proxy_status(proxy: str, proxy_status_dict: dict):
@@ -162,7 +162,7 @@ class PwAccount:
             logger.debug('Нажали кнопку "Регистрация" на главной странице')
         except NoSuchElementException:
             logger.error(f'Отсутствует кнопка "Регистрация" на главной странице')
-            self.save_error_screenshot('missing_registration_button')
+            self.save_debug_screenshot_if_enabled('missing_registration_button')
             raise
 
     def _switch_to_window(self, window_index):
@@ -183,7 +183,7 @@ class PwAccount:
             logger.debug(f'Ввели логин и пароль от аккаунта: {self.login} {self.password}')
         except (NoSuchElementException, WebDriverException):
             logger.error(f'Не смогли ввести логин и пароль от аккаунта')
-            self.save_error_screenshot('missing_login_and_password_fields')
+            self.save_debug_screenshot_if_enabled('missing_login_and_password_fields')
             raise
 
     def _press_registration_button(self):
@@ -208,7 +208,7 @@ class PwAccount:
             return True
         except (InvalidSelectorException, NoSuchElementException):
             logger.error(f'Не смогли нажать на кнопку "Регистрация" в MY.GAMES')
-            self.save_error_screenshot('missing_mygames_registration_button')
+            self.save_debug_screenshot_if_enabled('missing_mygames_registration_button')
 
     def _press_continue_button(self):
         try:
@@ -224,7 +224,7 @@ class PwAccount:
                 pass
         except StaleElementReferenceException:
             logger.error('Какая-то проблема с кнопкой "Продолжить"')
-            self.save_error_screenshot('missing_continue_button')
+            self.save_debug_screenshot_if_enabled('missing_continue_button')
             raise
 
     def _press_final_register_button(self):
@@ -243,7 +243,7 @@ class PwAccount:
             logger.debug('Нажали кнопку финальную кнопку "Зарегистрироваться"')
         except (StaleElementReferenceException, NoSuchElementException):
             logger.error('Не смогли нажать на финальную кнопку "Зарегистрироваться"')
-            self.save_error_screenshot('missing_final_registration_button')
+            self.save_debug_screenshot_if_enabled('missing_final_registration_button')
             raise
 
     def _check_registration_status(self):
@@ -255,7 +255,7 @@ class PwAccount:
             logger.debug(f'Зарегистрировали аккаунт {self.login} и сохранили в базу')
         except NoSuchElementException:
             logger.error(f'Отсутствует кнопка "Мой кабинет"')
-            self.save_error_screenshot('missing_my_cabinet_button')
+            self.save_debug_screenshot_if_enabled('missing_my_cabinet_button')
             raise
 
     def _check_has_error(self):
