@@ -32,12 +32,14 @@ def solve_mailru_captcha(driver, login):
     except Exception as e:
         logger.error(f'Какая-то ошибка в модуле решения капчи: {e}')
         raise
-    else:
-        captcha_code = response_solver['code']
-        captcha_field = driver.find_element_by_name('captcha_input')
-        captcha_field.click()
-        captcha_field.send_keys(captcha_code)
-        ok_button = driver.find_element_by_id('validate_form_submit')
-        ok_button.click()
-        logger.info('Успешно решили капчу mail.ru')
+    finally:
+        if os.path.exists(screenshot_path_and_name):
+            os.remove(screenshot_path_and_name)
+    captcha_code = response_solver['code']
+    captcha_field = driver.find_element_by_name('captcha_input')
+    captcha_field.click()
+    captcha_field.send_keys(captcha_code)
+    ok_button = driver.find_element_by_id('validate_form_submit')
+    ok_button.click()
+    logger.info('Успешно решили капчу mail.ru')
     return True
