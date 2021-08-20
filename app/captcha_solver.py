@@ -16,18 +16,19 @@ solver = TwoCaptcha(api_key)
 
 
 def solve_mailru_captcha(driver, login):
-    if not os.path.exists('screenshots/captcha/'):
-        os.mkdir('screenshots/captcha/')
-    screenshot_name = f'screenshots/captcha/{login}.png'
+    captcha_folder_path = 'screenshots/captcha/'
+    if not os.path.exists(captcha_folder_path):
+        os.mkdir(captcha_folder_path)
+    screenshot_path_and_name = f'{captcha_folder_path}{login}.png'
 
     logger.info('Попали на капчу mail.ru')
-    driver.save_screenshot(screenshot_name)  # делаем скриншот окна браузера
-    img = Image.open(screenshot_name)  # открываем скриншот через Pillow
+    driver.save_screenshot(screenshot_path_and_name)  # делаем скриншот окна браузера
+    img = Image.open(screenshot_path_and_name)  # открываем скриншот через Pillow
     area = (38, 168, 264, 245)
     cropped_img = img.crop(area)
-    cropped_img.save(screenshot_name)  # вырезаем кусочек с капчей и сохраняем обратно на диск
+    cropped_img.save(screenshot_path_and_name)  # вырезаем кусочек с капчей и сохраняем обратно на диск
     try:
-        response_solver: dict = solver.normal(screenshot_name)
+        response_solver: dict = solver.normal(screenshot_path_and_name)
     except Exception as e:
         logger.error(f'Какая-то ошибка в модуле решения капчи: {e}')
         raise
