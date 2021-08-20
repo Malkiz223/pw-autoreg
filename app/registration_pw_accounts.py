@@ -31,6 +31,12 @@ else:
     elif platform == 'linux':
         CHROME_PATH = os.path.abspath(os.getcwd()) + '/chromedriver'
 
+DEBUG_SCREENSHOTS = os.getenv('DEBUG_SCREENSHOTS')
+if DEBUG_SCREENSHOTS and DEBUG_SCREENSHOTS.lower() in {'1', 'true'}:
+    DEBUG_SCREENSHOTS = True
+else:
+    DEBUG_SCREENSHOTS = False
+
 
 def account_generator():
     login_list = []
@@ -99,7 +105,9 @@ class PwAccount:
     def delay(self, wait_time=10):
         self.driver.implicitly_wait(wait_time)
 
-    def save_error_screenshot(self, error_short_description='error'):
+    def save_debug_screenshot_if_enabled(self, error_short_description='error'):
+        if not DEBUG_SCREENSHOTS:
+            return False
         screenshot_folder_error = 'screenshots/errors/'
         screenshot_name = f'{error_short_description}-{self.login}.png'
 
