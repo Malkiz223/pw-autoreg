@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 # параметры запуска Selenium
 DOCKER = os.getenv('DOCKER')
 if DOCKER:
-    SELENIUM_URL = "http://selenium:4444/wd/hub"
     time.sleep(3)  # время на запуск Selenium
 else:
     if platform == 'win32':
@@ -112,7 +111,7 @@ class PwAccount:
     def _get_selenium_webdriver(self):
         try:
             if DOCKER:
-                driver = webdriver.Remote(SELENIUM_URL,
+                driver = webdriver.Remote(command_executor="http://selenium:4444/wd/hub",
                                           desired_capabilities=DesiredCapabilities.CHROME, options=self.options)
             else:
                 driver = webdriver.Chrome(executable_path=CHROME_PATH, options=self.options)
