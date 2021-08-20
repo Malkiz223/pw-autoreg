@@ -85,7 +85,7 @@ class PwAccount:
     def register_account(self):
         try:
             self._open_pw_main_page()
-            if self.driver.current_url == 'https://pw.mail.ru/validate/?ref_url=pw.mail.ru':
+            if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login)
             self._click_main_register_button()
             self._switch_to_window(1)
@@ -96,7 +96,12 @@ class PwAccount:
             self._press_continue_button()
             self._switch_to_window(0)
             time.sleep(3)
+            if self._check_captcha():
+                solve_mailru_captcha(self.driver, self.login)
             self._press_final_register_button()
+            time.sleep(2)
+            if self._check_captcha():
+                solve_mailru_captcha(self.driver, self.login)
             self._check_registration_status()
             return True
         except Exception:
@@ -130,6 +135,16 @@ class PwAccount:
         except (NewConnectionError, MaxRetryError):
             logger.error(f'Selenium не готов')
             time.sleep(1)
+
+    def _check_captcha(self):
+        try:
+            self.delay(1)
+            if self.driver.current_url == 'https://pw.mail.ru/validate/?ref_url=pw.mail.ru':
+                return True
+            return False
+        except WebDriverException:
+            logger.error('Браузер упал на проверке URL страницы?')
+            raise
 
     def _open_pw_main_page(self):
         try:
