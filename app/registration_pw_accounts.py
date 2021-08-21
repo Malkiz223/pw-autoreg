@@ -13,6 +13,7 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 from captcha_solver import solve_mailru_captcha
 from proxy import proxy_dict, current_proxy_status, get_good_proxy, redis_block_proxy
+from db import save_account
 
 # логирование
 logging.getLogger('selenium').setLevel('CRITICAL')
@@ -230,9 +231,9 @@ class PwAccount:
         try:
             self.delay()
             self.driver.find_element_by_xpath("//a[contains(text(),'Мой кабинет')]")
-            with open('accounts/accounts.txt', 'a') as accounts_file:
-                accounts_file.write('\t'.join([self.login, self.password, self.proxy]) + '\n')
+            save_account(self.login, self.password, self.proxy)
             logger.debug(f'Зарегистрировали аккаунт {self.login} и сохранили в базу')
+            return True
         except NoSuchElementException:
             logger.error(f'Отсутствует кнопка "Мой кабинет"')
             self.save_debug_screenshot_if_enabled('missing_my_cabinet_button')
