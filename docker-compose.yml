@@ -30,8 +30,8 @@ services:
     deploy:
       replicas: 10
     volumes:
-      - /app/accounts:/app/accounts
-      - /app/screenshots:/app/screenshots
+      - pw-accounts:/app/accounts
+      - registrations-debug-screenshots:/app/screenshots
     depends_on:
       - selenium
       - redis
@@ -44,3 +44,9 @@ networks:
       driver: default
       config:
         - subnet: 172.65.0.0/16
+
+volumes:
+  pw-accounts:
+    name: pw-accounts
+  registrations-debug-screenshots:
+    name: registrations-debug-screenshots
