@@ -3,7 +3,7 @@ version: "3.9"
 services:
   selenium:
     image: selenium/standalone-chrome
-    shm_size: 2g
+    shm_size: 2300m  # ~2.3g, только integer
     environment:
       - START_XVFB=false  # для --headless-режиме можно поставить в false
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true  # позволяет запустить больше сессий на одной ноде селениума
