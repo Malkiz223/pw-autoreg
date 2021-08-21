@@ -24,8 +24,8 @@ services:
     networks:
       - selenium_network
 
-  pw-registration-bot:
-    image: malkiz/pw-registration-bot
+  app:
+    image: malkiz/pw-autoreg
     restart: always
     deploy:
       replicas: 10
