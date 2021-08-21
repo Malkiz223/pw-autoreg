@@ -4,8 +4,11 @@ WORKDIR /app
 
 COPY /app/requirements.txt .
 
-RUN pip install --upgrade pip \
-&& pip install --no-cache-dir -r requirements.txt
+RUN apt update  \
+    && apt upgrade \
+    && pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV APIKEY_2CAPTCHA='dc9d396bebe4d66315dc925fdede8d71'
 ENV TZ='Europe/Moscow'
