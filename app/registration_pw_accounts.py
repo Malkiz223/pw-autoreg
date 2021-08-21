@@ -12,7 +12,7 @@ from selenium.webdriver import DesiredCapabilities
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 from captcha_solver import solve_mailru_captcha
-from proxy_list import proxy_list
+from proxy import proxy_dict, current_proxy_status, get_good_proxy, redis_block_proxy
 
 # логирование
 logging.getLogger('selenium').setLevel('CRITICAL')
