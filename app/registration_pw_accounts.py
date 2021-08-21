@@ -71,7 +71,7 @@ class PwAccount:
             self._switch_to_window(1)
             self._enter_login_and_password()
             time.sleep(1)
-            self._press_registration_button()
+            self._press_mygames_registration_button()
             self._check_has_error()
             self._press_continue_button()
             self._switch_to_window(0)
@@ -93,13 +93,13 @@ class PwAccount:
     def save_debug_screenshot_if_enabled(self, error_short_description='error'):
         if not DEBUG_SCREENSHOTS:
             return False
-        screenshot_folder_error = 'screenshots/errors/'
+        screenshots_folder_error = 'screenshots/errors/'
         screenshot_name = f'{error_short_description}-{self.login}.png'
 
-        if not os.path.exists(screenshot_folder_error):
-            os.mkdir(screenshot_folder_error)
-        self.driver.save_screenshot(screenshot_folder_error + screenshot_name)
-        logger.info(f'Скриншот {screenshot_name} сохранён в папку {screenshot_folder_error}')
+        if not os.path.exists(screenshots_folder_error):
+            os.mkdir(screenshots_folder_error)
+        self.driver.save_screenshot(screenshots_folder_error + screenshot_name)
+        logger.info(f'Скриншот {screenshot_name} сохранён в папку {screenshots_folder_error}')
 
     def _get_selenium_webdriver(self):
         try:
@@ -166,7 +166,7 @@ class PwAccount:
             self.save_debug_screenshot_if_enabled('missing_login_and_password_fields')
             raise
 
-    def _press_registration_button(self):
+    def _press_mygames_registration_button(self):
         # активируем кнопку "Регистрация"
         self.delay()
         self.driver.execute_script(
@@ -189,6 +189,7 @@ class PwAccount:
         except (InvalidSelectorException, NoSuchElementException):
             logger.error(f'Не смогли нажать на кнопку "Регистрация" в MY.GAMES')
             self.save_debug_screenshot_if_enabled('missing_mygames_registration_button')
+            raise
 
     def _press_continue_button(self):
         try:
