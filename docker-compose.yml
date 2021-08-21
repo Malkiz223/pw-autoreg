@@ -11,7 +11,7 @@ services:
       - JAVA_OPTS=-Dselenium.LOGGER.level=WARNING  # должно отключать логи селениума, но не работает?
       - JAVA_OPTS=-Dwebdriver.chrome.whitelistedIps= # должно убирать спам в логи с сообщением [99]
     ports:
-      - "4444:4444"
+      - "4444" # 4444:4444, если нужно выставить порт наружу
     restart: always
     networks:
       - selenium_network
@@ -20,7 +20,7 @@ services:
     image: redis
     restart: always
     ports:
-      - "6379:6379"
+      - "6379" # 6379:6379, если нужно выставить порт наружу
     networks:
       - selenium_network
 
