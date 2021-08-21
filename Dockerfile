@@ -18,7 +18,4 @@ ENV DEBUG_SCREENSHOTS=0
 
 COPY /app .
 
-VOLUME [ "/app/accounts" ]
-VOLUME [ "/app/screenshots" ]
-
-CMD ["python3", "registration_pw_accounts.py"]
+ENTRYPOINT ["python3", "registration_pw_accounts.py"]
