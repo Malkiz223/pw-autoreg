@@ -50,26 +50,6 @@ def account_generator():
     return result
 
 
-def get_proxy_dict_from_list():
-    _proxy_dict = dict()
-    for _proxy in proxy_list:
-        _proxy_dict[_proxy] = {'good_registrations': 0, 'bad_registrations': 0}
-    return _proxy_dict
-
-
-def current_proxy_status(proxy: str, proxy_status_dict: dict):
-    proxy_without_port = proxy.split(':')[0]
-    good_registrations = proxy_status_dict[proxy]['good_registrations']
-    bad_registrations = proxy_status_dict[proxy]['bad_registrations']
-    total_registrations = good_registrations + bad_registrations
-    success_rate = good_registrations / total_registrations * 100
-    return f'{proxy_without_port}:\t{good_registrations}/{total_registrations}\t[{success_rate:.2f}% success]'
-
-
-# TODO если выпал прокси - не брать его N минут и идти дальше (не спать 5 минут). Сделать на Редисе?
-# TODO складывать аккаунты в базу/Редис?
-
-
 class PwAccount:
     def __init__(self, account_login, account_password, account_proxy):
         self.login = account_login.lower()
@@ -282,11 +262,10 @@ class PwAccount:
 if __name__ == '__main__':
     registration_iterations = 0
     successful_registrations = 0
-    proxy_dict = get_proxy_dict_from_list()
 
     while True:
         login, password = account_generator()
-        proxy = random.choice(proxy_list)
+        proxy = get_good_proxy()
         account = PwAccount(login, password, proxy)
         if account.register_account():
             successful_registrations += 1
