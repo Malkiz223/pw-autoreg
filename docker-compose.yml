@@ -16,6 +16,14 @@ services:
     networks:
       - selenium_network
 
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - selenium_network
+
   pw-registration-bot:
     image: malkiz/pw-registration-bot
     restart: always
@@ -26,6 +34,7 @@ services:
       - /app/screenshots:/app/screenshots
     depends_on:
       - selenium
+      - redis
     networks:
       - selenium_network
 
