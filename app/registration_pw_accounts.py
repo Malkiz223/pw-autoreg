@@ -212,9 +212,8 @@ class PwAccount:
         try:
             # активируем кнопку "Зарегистрироваться"
             self.delay()
-            self.driver.execute_script("""
-                                    var elems = document.querySelectorAll(".oauth_modal_button");
-                                    [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
+            self.driver.execute_script("""var elems = document.querySelectorAll(".oauth_modal_button");
+                                        [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
         except TimeoutException:
             logger.error('Не смогли активировать финальную кнопку "Зарегистрироваться"')
             raise
