@@ -243,8 +243,8 @@ class PwAccount:
             self.delay(1)
             error_message = self.driver.find_element_by_xpath("//div[@class='ph-alert ph-alert_error']").text
             if error_message == "Превышено число попыток":
-                logger.error("Ждём 5 минут, превышено число попыток регистрации")
-                time.sleep(300)
+                redis_block_proxy(self.proxy)
+                logger.error(f"Блокируем прокси {self.proxy}")
                 raise
             else:
                 logger.critical(f'Новая ошибка: {error_message}')
