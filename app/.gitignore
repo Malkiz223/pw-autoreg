@@ -1,4 +1,3 @@
 /venv/
 /.idea/
-/accounts/*.txt
-!/proxy_list.py
+/accounts/
