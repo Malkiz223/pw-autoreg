@@ -40,10 +40,6 @@ services:
 
 networks:
   selenium_network:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.65.0.0/16
 
 volumes:
   pw-accounts:
