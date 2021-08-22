@@ -63,5 +63,5 @@ def current_proxy_statistic(proxy: str, proxy_status_dict: dict):
 
 def redis_block_proxy(proxy, block_seconds=300):
     redis.set(name=proxy, value=0, ex=block_seconds)
-    logger.info(f'Заблокировали прокси {proxy} на {block_seconds} секунд')
+    logger.debug(f'Заблокировали прокси {proxy} на {block_seconds} секунд')
     return True
