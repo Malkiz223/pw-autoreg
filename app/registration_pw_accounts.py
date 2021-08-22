@@ -98,7 +98,7 @@ class PwAccount:
             raise
         except (NewConnectionError, MaxRetryError):
             logger.error(f'Selenium не готов')
-            time.sleep(1)
+            time.sleep(2)
 
     def _check_captcha(self):
         try:
@@ -182,6 +182,7 @@ class PwAccount:
             logger.debug('Нажали кнопку "Продолжить"')
         except NoSuchElementException:
             try:
+                self.delay(1)
                 if self.driver.find_element_by_xpath("//div[contains(text(),'Этот email уже занят')]"):
                     logger.warning(f'Почта {self.login} уже занята')
                     raise
@@ -194,8 +195,7 @@ class PwAccount:
 
     def _press_final_register_button(self):
         try:
-            # активируем кнопку "Зарегистрироваться"
-            self.delay()
+            self.delay(5)  # активируем кнопку "Зарегистрироваться"
             self.driver.execute_script("""var elems = document.querySelectorAll(".oauth_modal_button");
                                         [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
         except TimeoutException:
