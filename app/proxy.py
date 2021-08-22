@@ -5,6 +5,8 @@ import time
 
 from redis import Redis, exceptions
 
+from config import IN_DOCKER, proxy_list
+
 # настройки логирования
 logging.getLogger('selenium').setLevel('CRITICAL')
 logging.getLogger('urllib3').setLevel('CRITICAL')
@@ -13,14 +15,13 @@ logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s]: %(mess
 logger = logging.getLogger(__name__)
 
 # создание удобного словаря
-proxy_list: list[str] = []
 proxy_dict = dict()
 for proxy in proxy_list:
     proxy_dict[proxy] = {'good_registrations': 0, 'bad_registrations': 0}
 
 # подключение к Redis
 try:
-    if os.getenv('DOCKER'):
+    if IN_DOCKER:
         redis = Redis(host='redis')
         redis.ping()
         logger.info('Подключились к Docker Redis')
