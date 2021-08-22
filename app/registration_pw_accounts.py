@@ -3,7 +3,6 @@ import os
 import random
 import string
 import time
-from sys import platform
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, WebDriverException, \
@@ -12,8 +11,9 @@ from selenium.webdriver import DesiredCapabilities
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 from captcha_solver import solve_mailru_captcha
-from proxy import proxy_dict, current_proxy_status, get_good_proxy, redis_block_proxy
+from config import IN_DOCKER, DEBUG_SCREENSHOTS, CHROMEDRIVER_PATH
 from db import save_account
+from proxy import proxy_dict, current_proxy_statistic, get_good_proxy, redis_block_proxy
 
 # логирование
 logging.getLogger('selenium').setLevel('CRITICAL')
@@ -22,21 +22,6 @@ log_level = os.getenv('LOG_LEVEL', 'INFO')
 logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
-# параметры запуска Selenium
-DOCKER = os.getenv('DOCKER')
-if DOCKER:
-    time.sleep(3)  # время на запуск Selenium
-else:
-    if platform == 'win32':
-        CHROME_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver.exe'
-    elif platform == 'linux':
-        CHROME_PATH = os.path.abspath(os.getcwd()) + '/chromedriver'
-
-DEBUG_SCREENSHOTS = os.getenv('DEBUG_SCREENSHOTS')
-if DEBUG_SCREENSHOTS and DEBUG_SCREENSHOTS.lower() in {'1', 'true'}:
-    DEBUG_SCREENSHOTS = True
-else:
-    DEBUG_SCREENSHOTS = False
 
 
 def account_generator():
@@ -104,11 +89,11 @@ class PwAccount:
 
     def _get_selenium_webdriver(self):
         try:
-            if DOCKER:
+            if IN_DOCKER:
                 driver = webdriver.Remote(command_executor="http://selenium:4444/wd/hub",
                                           desired_capabilities=DesiredCapabilities.CHROME, options=self.options)
             else:
-                driver = webdriver.Chrome(executable_path=CHROME_PATH, options=self.options)
+                driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, options=self.options)
             return driver
         except (SessionNotCreatedException, WebDriverException):
             logger.error(f'Не смогли получить webdriver')
