@@ -3,6 +3,8 @@ import logging
 from PIL import Image
 from twocaptcha import TwoCaptcha
 
+from config import CAPTCHA_API_KEY
+
 # логирование
 logging.getLogger('selenium').setLevel('CRITICAL')
 logging.getLogger('urllib3').setLevel('CRITICAL')
@@ -10,9 +12,8 @@ log_level = os.getenv('LOG_LEVEL', 'INFO')
 logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
-# настройки автоматического решения капчи
-api_key = os.getenv('APIKEY_2CAPTCHA')
-solver = TwoCaptcha(api_key)
+# экземпляр автоматического решателя капчи
+captcha_solver = TwoCaptcha(CAPTCHA_API_KEY)
 
 
 def solve_mailru_captcha(driver, login):
