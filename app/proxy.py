@@ -51,7 +51,7 @@ def get_good_proxy():
             time.sleep(1)
 
 
-def current_proxy_status(proxy: str, proxy_status_dict: dict):
+def current_proxy_statistic(proxy: str, proxy_status_dict: dict):
     proxy_without_port = proxy.split(':')[0]
     good_registrations = proxy_status_dict[proxy]['good_registrations']
     bad_registrations = proxy_status_dict[proxy]['bad_registrations']
