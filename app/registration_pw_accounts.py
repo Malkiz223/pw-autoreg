@@ -107,7 +107,7 @@ class PwAccount:
                 return True
             return False
         except WebDriverException:
-            logger.error('Браузер упал на проверке URL страницы?')
+            logger.error('Браузер упал на проверке URL страницы?')  # ни разу сюда не заходили
             raise
 
     def _open_pw_main_page(self):
@@ -132,7 +132,7 @@ class PwAccount:
     def _switch_to_window_index(self, window_index):
         try:
             self.delay()
-            self.driver.switch_to.window(self.driver.window_handles[window_index])  # открывается второе окно
+            self.driver.switch_to.window(self.driver.window_handles[window_index])  # передаём хендлер нужного окна
             logger.debug(f'Переключились на окно с индексом {window_index}')
         except (IndexError, WebDriverException):
             logger.error(f'Не смогли переключиться на окно с индексом {window_index}')
@@ -151,23 +151,22 @@ class PwAccount:
             raise
 
     def _press_mygames_registration_button(self):
-        # активируем кнопку "Регистрация"
         self.delay()
-        self.driver.execute_script(
+        self.driver.execute_script(  # активируем кнопку "Регистрация" или "Зарегистрироваться", они случайны
             """var button_next = document.getElementsByClassName("ph-form__btn ph-btn gtm_reg_btn");
             for (var i = 0; i < button_next.length; i++) {button_next[i].removeAttribute("disabled");}""")
         time.sleep(0.5)
         logger.debug('Активировали кнопку "Регистрация" в MY.GAMES')
         try:
-            self.delay(2)  # Зарегистрироваться
+            self.delay(2)  # кнопка "Зарегистрироваться"
             self.driver.find_element_by_xpath("//button[contains(text(),'Зарегистрироваться')]").click()
             logger.debug('Попробовали нажать кнопку "Зарегистрироваться" в MY.GAMES')
             return True
         except (InvalidSelectorException, NoSuchElementException):
             logger.debug(f'Не смогли нажать на кнопку "Зарегистрироваться" в MY.GAMES')
         try:
-            self.delay(2)
-            self.driver.find_element_by_xpath("//button[contains(text(),'Регистрация')]").click()  # Регистрация
+            self.delay(2)  # кнопка "Регистрация"
+            self.driver.find_element_by_xpath("//button[contains(text(),'Регистрация')]").click()
             logger.debug('Нажали на кнопку "Регистрация" в MY.GAMES')
             return True
         except (InvalidSelectorException, NoSuchElementException):
@@ -260,4 +259,4 @@ if __name__ == '__main__':
             logger.info(current_proxy_statistic(proxy, proxy_dict))
         del account
         registration_iterations += 1
-        logger.info(f'Попыток: {registration_iterations}. Зарегистрировано: {successful_registrations}')
+        logger.info(f'Зарегистрировано: {successful_registrations}. Попыток: {registration_iterations}.')
