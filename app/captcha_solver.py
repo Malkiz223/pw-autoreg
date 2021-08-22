@@ -7,10 +7,6 @@ from twocaptcha import TwoCaptcha
 from config import CAPTCHA_API_KEY
 
 # логирование
-logging.getLogger('selenium').setLevel('CRITICAL')
-logging.getLogger('urllib3').setLevel('CRITICAL')
-log_level = os.getenv('LOG_LEVEL', 'INFO')
-logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
 # экземпляр автоматического решателя капчи

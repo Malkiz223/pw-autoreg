@@ -1,5 +1,4 @@
 import logging
-import os
 import random
 import time
 
@@ -7,11 +6,7 @@ from redis import Redis, exceptions
 
 from config import IN_DOCKER, proxy_list
 
-# настройки логирования
-logging.getLogger('selenium').setLevel('CRITICAL')
-logging.getLogger('urllib3').setLevel('CRITICAL')
-log_level = os.getenv('LOG_LEVEL', 'INFO')
-logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%H:%M:%S")
+# логирование
 logger = logging.getLogger(__name__)
 
 # создание удобного словаря
@@ -47,7 +42,7 @@ def get_good_proxy():
             logger.debug(f'Выдали прокси: {proxy_}')
             return proxy_
         else:
-            logger.info(f'{proxy_} заблокирован на {current_proxy_ttl} секунд, выбираем следующий')
+            logger.debug(f'{proxy_} заблокирован на {current_proxy_ttl} секунд, выбираем следующий')
             time.sleep(1)
 
 

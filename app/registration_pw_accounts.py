@@ -16,10 +16,6 @@ from db import save_account
 from proxy import proxy_dict, current_proxy_statistic, get_good_proxy, redis_block_proxy
 
 # логирование
-logging.getLogger('selenium').setLevel('CRITICAL')
-logging.getLogger('urllib3').setLevel('CRITICAL')
-log_level = os.getenv('LOG_LEVEL', 'INFO')
-logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
 
