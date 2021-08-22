@@ -1,3 +1,4 @@
+import logging
 import os
 from sys import platform
 
@@ -116,6 +117,12 @@ proxy_list: list[str] = [
     '31.40.203.10:3000',
     '185.181.244.105:3000',  # до 8 сентября 8:50
 ]
+
+# настройки логгера
+LOGGER_LEVEL = os.getenv('LOGGER_LEVEL', 'INFO')
+logging.getLogger('selenium').setLevel('CRITICAL')
+logging.getLogger('urllib3').setLevel('CRITICAL')
+logging.basicConfig(level=LOGGER_LEVEL, format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%H:%M:%S")
 
 # True, если скрипт запущен в Docker
 IN_DOCKER = True if os.getenv('DOCKER') else False
