@@ -23,17 +23,15 @@ logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s]: %(mess
 logger = logging.getLogger(__name__)
 
 
-
-def account_generator():
+def generate_random_account() -> tuple:
     login_list = []
     password_list = []
     for _ in range(random.randint(8, 11)):
         login_list.append(random.choice(string.ascii_lowercase))
     for _ in range(random.randint(9, 13)):
         password_list.append(random.choice(string.ascii_letters + string.digits))
-    service = random.choice(['@yandex.ru', '@gmail.com', '@ya.ru'])
-    result = ''.join(login_list) + service, ''.join(password_list)
-    return result
+    email_service = random.choice(['@yandex.ru', '@gmail.com', '@ya.ru'])
+    return ''.join(login_list) + email_service, ''.join(password_list)
 
 
 class PwAccount:
@@ -54,13 +52,13 @@ class PwAccount:
             if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login)
             self._click_main_register_button()
-            self._switch_to_window(1)
+            self._switch_to_window_index(1)
             self._enter_login_and_password()
             time.sleep(1)
             self._press_mygames_registration_button()
             self._check_has_error()
             self._press_continue_button()
-            self._switch_to_window(0)
+            self._switch_to_window_index(0)
             time.sleep(3)
             if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login)
@@ -131,7 +129,7 @@ class PwAccount:
             self.save_debug_screenshot_if_enabled('missing_registration_button')
             raise
 
-    def _switch_to_window(self, window_index):
+    def _switch_to_window_index(self, window_index):
         try:
             self.delay()
             self.driver.switch_to.window(self.driver.window_handles[window_index])  # открывается второе окно
@@ -250,7 +248,7 @@ if __name__ == '__main__':
     successful_registrations = 0
 
     while True:
-        login, password = account_generator()
+        login, password = generate_random_account()
         proxy = get_good_proxy()
         account = PwAccount(login, password, proxy)
         if account.register_account():
@@ -259,7 +257,7 @@ if __name__ == '__main__':
         else:
             proxy_dict[proxy]['bad_registrations'] += 1
             logger.info(f'Аккаунт не зарегистрирован')
-            logger.info(current_proxy_status(proxy, proxy_dict))
+            logger.info(current_proxy_statistic(proxy, proxy_dict))
         del account
         registration_iterations += 1
         logger.info(f'Попыток: {registration_iterations}. Зарегистрировано: {successful_registrations}')
