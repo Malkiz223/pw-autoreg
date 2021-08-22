@@ -39,7 +39,7 @@ def solve_mailru_captcha(driver, login):
             os.remove(screenshot_path_and_name)
     captcha_code = response_solver['code']
     captcha_field = driver.find_element_by_name('captcha_input')
-    captcha_field.click()
+    # captcha_field.click()  # можно не кликать на поле перед вводом данных?
     captcha_field.send_keys(captcha_code)
     ok_button = driver.find_element_by_id('validate_form_submit')
     ok_button.click()
