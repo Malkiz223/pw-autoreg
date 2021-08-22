@@ -41,7 +41,7 @@ def get_good_proxy():
     """
     while True:
         proxy_ = random.choice(proxy_list)
-        current_proxy_ttl = redis.ttl(proxy_)
+        current_proxy_ttl = redis.ttl(proxy_)  # проверяем, "забанен" ли прокси в Редис
         if not current_proxy_ttl > 0:  # Возвращает -2 на отсутствующие и истёкшие TTL
             redis_block_proxy(proxy_, 10)  # запрещаем брать этот прокси другим клиентам на 10 секунд
             logger.debug(f'Выдали прокси: {proxy_}')
@@ -57,6 +57,7 @@ def current_proxy_status(proxy: str, proxy_status_dict: dict):
     bad_registrations = proxy_status_dict[proxy]['bad_registrations']
     total_registrations = good_registrations + bad_registrations
     success_rate = good_registrations / total_registrations * 100
+    # сообщение вида '123.45.67.89:   17/18   [94.44% success]'
     return f'{proxy_without_port}:\t{good_registrations}/{total_registrations}\t[{success_rate:.2f}% success]'
 
 
