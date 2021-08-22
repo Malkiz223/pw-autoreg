@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY /app/requirements.txt .
 
-RUN apt update  \
+RUN apt update \
     && apt upgrade \
     && pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
@@ -18,4 +18,4 @@ ENV DEBUG_SCREENSHOTS=0
 
 COPY /app .
 
-ENTRYPOINT ["python3", "registration_pw_accounts.py"]
+ENTRYPOINT [ "python3", "registration_pw_accounts.py" ]
