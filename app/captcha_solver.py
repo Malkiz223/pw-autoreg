@@ -25,12 +25,12 @@ def solve_mailru_captcha(driver, login):
 
     logger.info('Попали на капчу mail.ru')
     driver.save_screenshot(screenshot_path_and_name)  # делаем скриншот окна браузера
-    img = Image.open(screenshot_path_and_name)  # открываем скриншот через Pillow
-    area = (38, 168, 264, 245)
-    cropped_img = img.crop(area)
-    cropped_img.save(screenshot_path_and_name)  # вырезаем кусочек с капчей и сохраняем обратно на диск
+    full_page_image = Image.open(screenshot_path_and_name)  # открываем скриншот через Pillow
+    captcha_area = (38, 168, 264, 245)
+    cropped_img = full_page_image.crop(captcha_area)  # вырезаем кусочек с капчей из скриншота
+    cropped_img.save(screenshot_path_and_name)  # и сохраняем на диск с тем же именем (заменяя старый скрин)
     try:
-        response_solver: dict = solver.normal(screenshot_path_and_name)
+        response_solver: dict = captcha_solver.normal(screenshot_path_and_name)
     except Exception as e:
         logger.error(f'Какая-то ошибка в модуле решения капчи: {e}')
         raise
