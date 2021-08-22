@@ -43,6 +43,7 @@ def get_good_proxy():
         proxy_ = random.choice(proxy_list)
         current_proxy_ttl = redis.ttl(proxy_)
         if not current_proxy_ttl > 0:  # Возвращает -2 на отсутствующие и истёкшие TTL
+            redis_block_proxy(proxy_, 10)  # запрещаем брать этот прокси другим клиентам на 10 секунд
             logger.debug(f'Выдали прокси: {proxy_}')
             return proxy_
         else:
