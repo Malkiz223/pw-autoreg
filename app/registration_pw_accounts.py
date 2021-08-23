@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, WebDriverException, \
     SessionNotCreatedException, TimeoutException, InvalidSelectorException
 from selenium.webdriver import DesiredCapabilities
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+from urllib3.exceptions import MaxRetryError, NewConnectionError, ProtocolError
 
 from captcha_solver import solve_mailru_captcha
 from config import IN_DOCKER, DEBUG_SCREENSHOTS, CHROMEDRIVER_PATH
@@ -82,19 +82,21 @@ class PwAccount:
         logger.info(f'Скриншот {screenshot_name} сохранён в папку {screenshots_folder_error}')
 
     def _get_selenium_webdriver(self):
-        try:
-            if IN_DOCKER:
-                driver = webdriver.Remote(command_executor="http://selenium:4444/wd/hub",
-                                          desired_capabilities=DesiredCapabilities.CHROME, options=self.options)
-            else:
-                driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, options=self.options)
-            return driver
-        except (SessionNotCreatedException, WebDriverException):
-            logger.error(f'Не смогли получить webdriver')
-            raise
-        except (NewConnectionError, MaxRetryError):
-            logger.error(f'Selenium не готов')
-            time.sleep(2)
+        while True:
+            try:
+                if IN_DOCKER:
+                    driver = webdriver.Remote(command_executor="http://selenium:4444/wd/hub",
+                                              desired_capabilities=DesiredCapabilities.CHROME, options=self.options)
+                else:
+                    driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, options=self.options)
+                logger.debug('Получили webdriver')
+                return driver
+            except (SessionNotCreatedException, WebDriverException, ProtocolError):
+                logger.error(f'Не смогли получить webdriver')
+                time.sleep(2)
+            except (NewConnectionError, MaxRetryError):
+                logger.warning(f'Selenium не готов')
+                time.sleep(2)
 
     def _check_captcha(self):
         try:
@@ -234,7 +236,8 @@ class PwAccount:
         try:
             self.driver.quit()
             logger.debug(f'Закрыли браузер у аккаунта {self.login}')
-        except AttributeError:
+        except (AttributeError, ConnectionResetError, ProtocolError,
+                SessionNotCreatedException, WebDriverException, MaxRetryError):
             logger.debug(f'Не смогли закрыть браузер у окна {self.login}')
 
 
