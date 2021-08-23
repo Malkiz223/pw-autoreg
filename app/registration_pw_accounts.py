@@ -27,7 +27,10 @@ def generate_random_account() -> tuple:
     for _ in range(random.randint(9, 13)):
         password_list.append(random.choice(string.ascii_letters + string.digits))
     email_service = random.choice(['@yandex.ru', '@gmail.com', '@ya.ru'])
-    return ''.join(login_list) + email_service, ''.join(password_list)
+    login_ = ''.join(login_list) + email_service
+    password_ = ''.join(password_list)
+    logger.debug(f'Сгенерировали аккаунт: {login_}, {password_}')
+    return login_, password_
 
 
 class PwAccountRegistrar:

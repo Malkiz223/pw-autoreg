@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 # создание удобного словаря из config.proxy_list
 proxy_dict = dict()
-for proxy in proxy_list:
-    proxy_dict[proxy] = {'good_registrations': 0, 'bad_registrations': 0}
+for proxy_ in proxy_list:
+    proxy_dict[proxy_] = {'successful_registrations': 0, 'unsuccessful_registrations': 0}
 
 # подключение к Redis
 try:
@@ -35,12 +35,8 @@ def get_good_proxy():
     Как только прокси нет в Редисе - отдавать строку IP:порт
     """
     while True:
-        proxy_ = random.choice(proxy_list)
-        current_proxy_ttl = redis.ttl(proxy_)  # проверяем, "забанен" ли прокси в Редис
-        if not current_proxy_ttl > 0:  # Возвращает -2 на отсутствующие и истёкшие TTL
-            redis_block_proxy(proxy_, 10)  # запрещаем брать этот прокси другим клиентам на 10 секунд
-            logger.debug(f'Выдали прокси: {proxy_}')
-            return proxy_
+        if proxy_list:
+            proxy = random.choice(proxy_list)
         else:
             logger.debug(f'{proxy_} заблокирован на {current_proxy_ttl} секунд, выбираем следующий')
             time.sleep(1)
@@ -52,8 +48,8 @@ def current_proxy_statistic(proxy: str, proxy_status_dict: dict) -> str:
     Позволяет заметить прокси с околонулевым процентом регистраций, чтобы вручную убрать его из списка.
     """
     proxy_without_port = proxy.split(':')[0]
-    good_registrations = proxy_status_dict[proxy]['good_registrations']
-    bad_registrations = proxy_status_dict[proxy]['bad_registrations']
+    good_registrations = proxy_status_dict[proxy]['successful_registrations']
+    bad_registrations = proxy_status_dict[proxy]['unsuccessful_registrations']
     total_registrations = good_registrations + bad_registrations
     success_rate = good_registrations / total_registrations * 100
     # сообщение вида '123.45.67.89:   17/18   [94.44% success]'
