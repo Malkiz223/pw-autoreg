@@ -1,6 +1,7 @@
 import logging
 import os
 from sys import platform
+from distutils.util import strtobool
 
 # записываем свои прокси в виде 'IP:port'
 # логины и пароли пока не поддерживаются, привязываем прокси к своему IP
@@ -125,7 +126,7 @@ logging.getLogger('urllib3').setLevel('CRITICAL')
 logging.basicConfig(level=LOGGER_LEVEL, format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%H:%M:%S")
 
 # True, если скрипт запущен в Docker
-IN_DOCKER = True if os.getenv('DOCKER') else False
+IN_DOCKER: int = strtobool(os.getenv('DOCKER', 'false'))  # 0 или 1
 
 # будет использоваться, если скрипт запущен не в Docker (тогда использовать свои chromedriver)
 if platform == 'win32':
@@ -137,4 +138,4 @@ elif platform == 'linux':
 CAPTCHA_API_KEY = os.getenv('APIKEY_2CAPTCHA')
 
 # True, если нужно сохранять скриншоты ошибок
-DEBUG_SCREENSHOTS = True if os.getenv('DEBUG_SCREENSHOTS') == 'true' else False
+DEBUG_SCREENSHOTS: int = strtobool(os.getenv('DEBUG_SCREENSHOTS', 'false'))  # 0 или 1
