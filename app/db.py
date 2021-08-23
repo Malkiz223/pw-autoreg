@@ -5,7 +5,7 @@ connect = sqlite3.connect('accounts/accounts.sqlite3')
 cursor = connect.cursor()
 
 
-def init_db_if_not_exists():
+def _init_accounts_db_if_not_exists() -> None:
     cursor.execute('CREATE TABLE IF NOT EXISTS accounts ('
                    'id INTEGER PRIMARY KEY AUTOINCREMENT,'
                    'login VARCHAR UNIQUE NOT NULL,'
@@ -21,4 +21,4 @@ def save_account(login: str, password: str, proxy: str):
     connect.commit()
 
 
-init_db_if_not_exists()
+_init_accounts_db_if_not_exists()
