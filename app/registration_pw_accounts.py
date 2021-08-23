@@ -30,8 +30,15 @@ def generate_random_account() -> tuple:
     return ''.join(login_list) + email_service, ''.join(password_list)
 
 
-class PwAccount:
-    def __init__(self, account_login, account_password, account_proxy):
+class PwAccountRegistrar:
+    """
+    Регистрирует аккаунты по переданным логину и паролю. Может регистрировать с переданными прокси.
+    При использовании без контейнера требуется установить Google Chrome версии не ниже, чем у chromedriver.
+    На момент написания в репозитории версия 92.0.4515.159.
+    Для более стабильной работы с прокси желателен запущенный Redis (будет временно отстранять плохие прокси).
+    """
+
+    def __init__(self, account_login: str, account_password: str, account_proxy: str = None):
         self.login = account_login.lower()
         self.password = account_password
         self.proxy = account_proxy
@@ -42,7 +49,10 @@ class PwAccount:
         self.pw_main_page_url = 'https://pw.mail.ru/'
         self.driver = self._get_selenium_webdriver()
 
-    def register_account(self):
+    def register_account(self) -> bool:
+        """
+        Основной метод класса. Возвращает false, если в одном из методов произошла ошибка.
+        """
         try:
             self._open_pw_main_page()
             if self._check_captcha():
@@ -67,10 +77,18 @@ class PwAccount:
         except Exception:
             return False
 
-    def delay(self, wait_time=10):
+    def delay(self, wait_time=10) -> None:
+        """
+        Позволяет не ждать полное время до появления элемента на странице.
+        Как только элемент стал активным - возобновляет скрипт.
+        """
         self.driver.implicitly_wait(wait_time)
 
     def save_debug_screenshot_if_enabled(self, error_short_description='error'):
+        """
+        Сохраняет скриншот браузера, позволяя выявить причину ошибки. Работает только тогда, когда есть
+        os.getenv('DEBUG_SCREENSHOTS'), берётся из config.py.
+        """
         if not DEBUG_SCREENSHOTS:
             return False
         screenshots_folder_error = 'screenshots/errors/'
@@ -81,7 +99,12 @@ class PwAccount:
         self.driver.save_screenshot(screenshots_folder_error + screenshot_name)
         logger.info(f'Скриншот {screenshot_name} сохранён в папку {screenshots_folder_error}')
 
-    def _get_selenium_webdriver(self):
+    def _get_selenium_webdriver(self) -> webdriver:
+        """
+        Если работает из Docker - пытается запустить удалённый драйвер, предположительно
+        запускающийся из docker-compose. В противном случае берёт chromedriver (в зависимости от ОС) из папки.
+        Нет смысла выходить из цикла, пока не получен драйвер. options берутся из __init__.
+        """
         while True:
             try:
                 if IN_DOCKER:
@@ -98,7 +121,10 @@ class PwAccount:
                 logger.warning(f'Selenium не готов')
                 time.sleep(2)
 
-    def _check_captcha(self):
+    def _check_captcha(self) -> bool:
+        """
+        Можно переместить модуль в решатель капчи, в любом случае он к нему обращается по итогу.
+        """
         try:
             self.delay(1)
             if self.driver.current_url == 'https://pw.mail.ru/validate/?ref_url=pw.mail.ru':
@@ -128,6 +154,10 @@ class PwAccount:
             raise
 
     def _switch_to_window_index(self, window_index):
+        """
+        Во время регистрации аккаунта открывается дополнительное окно, на которое нужно
+        переключиться для дальнейшей работы с браузером. Затем вернуться на основное окно.
+        """
         try:
             self.delay()
             self.driver.switch_to.window(self.driver.window_handles[window_index])  # передаём хендлер нужного окна
@@ -148,7 +178,13 @@ class PwAccount:
             self.save_debug_screenshot_if_enabled('missing_login_and_password_fields')
             raise
 
-    def _press_mygames_registration_button(self):
+    def _press_mygames_registration_button(self) -> bool:
+        """
+        Кнопка для регистрации аккаунты зависит от времени, когда аккаунт регистрируется. Как ни парадоксально,
+        кнопка меняется примерно раз в две минуты. Либо зависит от прокси, но по наблюдениям и долгому дебаггингу -
+        скорее первый вариант. Видимо, особый способ защиты.
+        execute_script здесь активирует кнопку для нажатия, позволяя не ставить галочки на всяких согласиях.
+        """
         self.delay()
         self.driver.execute_script(  # активируем кнопку "Регистрация" или "Зарегистрироваться", они случайны
             """var button_next = document.getElementsByClassName("ph-form__btn ph-btn gtm_reg_btn");
@@ -191,6 +227,10 @@ class PwAccount:
             raise
 
     def _press_final_register_button(self):
+        """
+        Кнопка "Зарегистрироваться", появляющаяся на основной странице уже после регистрации в MY.GAMES.
+        Убираем атрибут disabled у кнопки, в результате чего она становится активной (можно не проходить reCaptcha)
+        """
         try:
             self.delay(5)  # активируем кнопку "Зарегистрироваться"
             self.driver.execute_script("""var elems = document.querySelectorAll(".oauth_modal_button");
@@ -207,7 +247,11 @@ class PwAccount:
             self.save_debug_screenshot_if_enabled('missing_final_registration_button')
             raise
 
-    def _check_registration_status(self):
+    def _check_registration_status(self) -> bool:
+        """
+        По завершению регистрации мы должны попасть на главную страницу, где можно понять, зарегистрировались ли мы,
+        по наличию кнопки "Мой кабинет".
+        """
         try:
             self.delay()
             self.driver.find_element_by_xpath("//a[contains(text(),'Мой кабинет')]")
@@ -220,6 +264,10 @@ class PwAccount:
             raise
 
     def _check_has_error(self):
+        """
+        При попытке зарегистрировать аккаунт в MY.GAMES могут быть различные ошибки, не позволяющие
+        продолжить регистрацию. На странице появляется поле с текстом ошибки, по тексту анализируем её.
+        """
         try:
             self.delay(1)
             error_message = self.driver.find_element_by_xpath("//div[@class='ph-alert ph-alert_error']").text
@@ -233,6 +281,9 @@ class PwAccount:
             logger.debug('Ошибок регистрации нет, идём дальше')
 
     def __del__(self):
+        """
+        Огромный список исключений из-за удаления инстанса класса после сломанного по различным причинам браузера.
+        """
         try:
             self.driver.quit()
             logger.debug(f'Закрыли браузер у аккаунта {self.login}')

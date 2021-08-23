@@ -14,7 +14,11 @@ logger = logging.getLogger(__name__)
 captcha_solver = TwoCaptcha(CAPTCHA_API_KEY)
 
 
-def solve_mailru_captcha(driver, login, proxy):
+def solve_mailru_captcha(driver, login, proxy) -> bool:
+    """
+    Попадаем сюда, если url страницы совпадает с url капчи. Скриним браузер, вырезает из скрина капчу,
+    отправляем скрин решателю капчи. Ответ вставляем в поле ввода и жмём ОК.
+    """
     captcha_folder_path = 'screenshots/captcha/'
     if not os.path.exists(captcha_folder_path):
         os.mkdir(captcha_folder_path)
