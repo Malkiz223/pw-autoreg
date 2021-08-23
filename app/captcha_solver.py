@@ -5,6 +5,7 @@ from PIL import Image
 from twocaptcha import TwoCaptcha
 
 from config import CAPTCHA_API_KEY
+from proxy import redis_block_proxy
 
 # логирование
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 captcha_solver = TwoCaptcha(CAPTCHA_API_KEY)
 
 
-def solve_mailru_captcha(driver, login):
+def solve_mailru_captcha(driver, login, proxy):
     captcha_folder_path = 'screenshots/captcha/'
     if not os.path.exists(captcha_folder_path):
         os.mkdir(captcha_folder_path)
@@ -28,7 +29,9 @@ def solve_mailru_captcha(driver, login):
     try:
         response_solver: dict = captcha_solver.normal(screenshot_path_and_name)
     except Exception as e:
-        logger.error(f'Какая-то ошибка в модуле решения капчи: {e}')
+        logger.error(f'Ошибка решения капчи: {e}')
+        redis_block_proxy(proxy, 600)
+        logger.debug(f'Заблокировали {proxy} на 10 минут')
         raise
     finally:
         if os.path.exists(screenshot_path_and_name):
