@@ -46,7 +46,7 @@ class PwAccount:
         try:
             self._open_pw_main_page()
             if self._check_captcha():
-                solve_mailru_captcha(self.driver, self.login)
+                solve_mailru_captcha(self.driver, self.login, self.proxy)
             self._click_main_register_button()
             self._switch_to_window_index(1)
             self._enter_login_and_password()
@@ -57,11 +57,11 @@ class PwAccount:
             self._switch_to_window_index(0)
             time.sleep(3)
             if self._check_captcha():
-                solve_mailru_captcha(self.driver, self.login)
+                solve_mailru_captcha(self.driver, self.login, self.proxy)
             self._press_final_register_button()
             time.sleep(2)
             if self._check_captcha():
-                solve_mailru_captcha(self.driver, self.login)
+                solve_mailru_captcha(self.driver, self.login, self.proxy)
             self._check_registration_status()
             return True
         except Exception:
