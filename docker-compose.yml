@@ -13,16 +13,12 @@ services:
     ports:
       - "4444" # 4444:4444, если нужно выставить порт наружу
     restart: always
-    networks:
-      - selenium_network
 
   redis:
     image: redis
     restart: always
     ports:
       - "6379" # 6379:6379, если нужно выставить порт наружу
-    networks:
-      - selenium_network
 
   app:
     image: malkiz/pw-autoreg
@@ -35,11 +31,6 @@ services:
     depends_on:
       - selenium
       - redis
-    networks:
-      - selenium_network
-
-networks:
-  selenium_network:
 
 volumes:
   pw-accounts:
