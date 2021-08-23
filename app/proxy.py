@@ -56,7 +56,15 @@ def current_proxy_statistic(proxy: str, proxy_status_dict: dict):
     return f'{proxy_without_port}:\t{good_registrations}/{total_registrations}\t[{success_rate:.2f}% success]'
 
 
-def redis_block_proxy(proxy, block_seconds=300):
+def block_proxy_if_redis_works(proxy, block_seconds=300) -> bool:
+    """
+    Позволяет блокировать выдачу конкретного прокси по различным причинам. Примеры использования:
+    Если прокси выдаёт капчу, а денег на балансе для её решения нет - блокируем прокси на 10 минут.
+    Если прокси выдаёт ошибку "Превышено количество регистраций" - блокируем на 5 минут.
+    Если прокси выдан клиенту, то не выдавать этот прокси другим клиентам 10 секунд.
+    """
+    if not redis_works:
+        return False
     redis.set(name=proxy, value=0, ex=block_seconds)
     logger.debug(f'Заблокировали прокси {proxy} на {block_seconds} секунд')
     return True
