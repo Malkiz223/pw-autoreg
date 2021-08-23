@@ -299,8 +299,8 @@ if __name__ == '__main__':
 
     while True:
         login, password = generate_random_account()
-        proxy = get_good_proxy()
-        account = PwAccount(login, password, proxy)
+        proxy: str or None = get_good_proxy()  # скрипт успешно отработает с прокси и без него
+        account = PwAccountRegistrar(login, password, proxy)
         if account.register_account():
             successful_registrations += 1
             proxy_dict[proxy]['good_registrations'] += 1

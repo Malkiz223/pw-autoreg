@@ -15,7 +15,7 @@ def _init_accounts_db_if_not_exists() -> None:
     connect.commit()
 
 
-def save_account(login: str, password: str, proxy: str):
+def save_account(login: str, password: str, proxy: str or None) -> None:
     cursor.execute('INSERT INTO accounts (login, password, proxy, creation_time) VALUES (?, ?, ?, ?)',
                    (login, password, proxy, int(time.time()),))
     connect.commit()
