@@ -23,7 +23,7 @@ def solve_mailru_captcha(driver, login, proxy):
     logger.info('Попали на капчу mail.ru')
     driver.save_screenshot(screenshot_path_and_name)  # делаем скриншот окна браузера
     full_page_image = Image.open(screenshot_path_and_name)  # открываем скриншот через Pillow
-    captcha_area = (38, 168, 264, 245)
+    captcha_area = (38, 168, 264, 245)  # левый верхний угол, правый нижний угол капчи относительно скриншота
     cropped_img = full_page_image.crop(captcha_area)  # вырезаем кусочек с капчей из скриншота
     cropped_img.save(screenshot_path_and_name)  # и сохраняем на диск с тем же именем (заменяя старый скрин)
     try:
