@@ -264,7 +264,7 @@ class PwAccountRegistrar:
         except NoSuchElementException:
             logger.error(f'Отсутствует кнопка "Мой кабинет"')
             self.save_debug_screenshot_if_enabled('missing_my_cabinet_button')
-            raise
+            return False
 
     def _check_has_error(self):
         """
