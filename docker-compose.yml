@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   selenium:
-    image: selenium/standalone-chrome
+    image: selenium/standalone-chrome:3.141.59
     shm_size: 2g  # рекомендовано 2g, но на 10 нод я упирался в память
     environment:
       - TZ=Europe/Moscow
@@ -17,7 +17,7 @@ services:
     restart: always
 
   redis:
-    image: redis
+    image: redis:6.2
     restart: always
     ports:
       - "6379" # 6379:6379, если нужно выставить порт наружу
