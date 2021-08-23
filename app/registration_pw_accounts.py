@@ -13,7 +13,7 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError, ProtocolError
 from captcha_solver import solve_mailru_captcha
 from config import IN_DOCKER, DEBUG_SCREENSHOTS, CHROMEDRIVER_PATH
 from db import save_account
-from proxy import proxy_dict, current_proxy_statistic, get_good_proxy, redis_block_proxy
+from proxy import proxy_dict, current_proxy_statistic, get_good_proxy, block_proxy_if_redis_works
 
 # логирование
 logger = logging.getLogger(__name__)
@@ -272,7 +272,7 @@ class PwAccountRegistrar:
             self.delay(1)
             error_message = self.driver.find_element_by_xpath("//div[@class='ph-alert ph-alert_error']").text
             if error_message == "Превышено число попыток":
-                redis_block_proxy(self.proxy)
+                block_proxy_if_redis_works(self.proxy)
                 logger.error(f"Блокируем прокси {self.proxy}")
                 raise
             else:
