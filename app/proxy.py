@@ -9,7 +9,7 @@ from config import IN_DOCKER, proxy_list
 # логирование
 logger = logging.getLogger(__name__)
 
-# создание удобного словаря
+# создание удобного словаря из config.proxy_list
 proxy_dict = dict()
 for proxy in proxy_list:
     proxy_dict[proxy] = {'good_registrations': 0, 'bad_registrations': 0}
@@ -18,11 +18,11 @@ for proxy in proxy_list:
 try:
     if IN_DOCKER:
         redis = Redis(host='redis')
-        redis.ping()
+        redis.ping()  # если не сделать, то он будет считаться запущенным в любом случае
         logger.info('Подключились к Docker Redis')
     else:
         redis = Redis()
-        redis.ping()
+        redis.ping()  # если не сделать, то он будет считаться запущенным в любом случае
         logger.info('Подключились к локальному Redis')
 except exceptions.ConnectionError:
     logger.error('Нет подключения к Redis')

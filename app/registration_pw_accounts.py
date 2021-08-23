@@ -242,6 +242,7 @@ class PwAccount:
 
 
 if __name__ == '__main__':
+    # счётчики для печати статистики регистраций
     registration_iterations = 0
     successful_registrations = 0
 
