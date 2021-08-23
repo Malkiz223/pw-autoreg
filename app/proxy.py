@@ -31,8 +31,8 @@ except exceptions.ConnectionError:
 
 def get_good_proxy():
     """
-    Должен выбираться рандомный прокси из листа, проверяться, если TTL proxy больше нуля - рандомить следующий
-    Как только прокси нет в Редисе - отдавать строку айпи:порт
+    Выбирается рандомный прокси из листа, проверяется в Redis, если TTL proxy больше нуля - рандомить следующий
+    Как только прокси нет в Редисе - отдавать строку IP:порт
     """
     while True:
         proxy_ = random.choice(proxy_list)
@@ -46,7 +46,11 @@ def get_good_proxy():
             time.sleep(1)
 
 
-def current_proxy_statistic(proxy: str, proxy_status_dict: dict):
+def current_proxy_statistic(proxy: str, proxy_status_dict: dict) -> str:
+    """
+    Статистика конкретного прокси печатается в консоль, если регистрация аккаунта на данном прокси закончилась провалом.
+    Позволяет заметить прокси с околонулевым процентом регистраций, чтобы вручную убрать его из списка.
+    """
     proxy_without_port = proxy.split(':')[0]
     good_registrations = proxy_status_dict[proxy]['good_registrations']
     bad_registrations = proxy_status_dict[proxy]['bad_registrations']
