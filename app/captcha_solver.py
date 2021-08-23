@@ -5,7 +5,7 @@ from PIL import Image
 from twocaptcha import TwoCaptcha
 
 from config import CAPTCHA_API_KEY
-from proxy import redis_block_proxy
+from proxy import block_proxy_if_redis_works
 
 # логирование
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def solve_mailru_captcha(driver, login, proxy):
         response_solver: dict = captcha_solver.normal(screenshot_path_and_name)
     except Exception as e:
         logger.error(f'Ошибка решения капчи: {e}')
-        redis_block_proxy(proxy, 600)
+        block_proxy_if_redis_works(proxy, 600)
         logger.debug(f'Заблокировали {proxy} на 10 минут')
         raise
     finally:
