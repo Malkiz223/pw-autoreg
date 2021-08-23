@@ -76,8 +76,7 @@ class PwAccountRegistrar:
             time.sleep(2)
             if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login, self.proxy)
-            self._check_registration_status()
-            return True
+            return self._check_registration_status()
         except Exception:
             return False
 
