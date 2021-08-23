@@ -23,6 +23,8 @@ services:
   app:
     image: malkiz/pw-autoreg
     restart: always
+    env_file:
+      - .env
     deploy:
       replicas: 10
     volumes:
