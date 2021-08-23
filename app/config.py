@@ -118,7 +118,7 @@ proxy_list: list[str] = [
     '185.181.244.105:3000',  # до 8 сентября 8:50
 ]
 
-# настройки логгера
+# настройки логирования
 LOGGER_LEVEL = os.getenv('LOGGER_LEVEL', 'INFO')
 logging.getLogger('selenium').setLevel('CRITICAL')
 logging.getLogger('urllib3').setLevel('CRITICAL')
@@ -133,12 +133,8 @@ if platform == 'win32':
 elif platform == 'linux':
     CHROMEDRIVER_PATH = os.path.abspath(os.getcwd()) + '/chromedriver'
 
-# API решателя капчи от rucaptcha.com
+# API решателя капчи от rucaptcha.com или 2captcha.com
 CAPTCHA_API_KEY = os.getenv('APIKEY_2CAPTCHA')
 
 # True, если нужно сохранять скриншоты ошибок
-DEBUG_SCREENSHOTS = os.getenv('DEBUG_SCREENSHOTS')
-if DEBUG_SCREENSHOTS and DEBUG_SCREENSHOTS.lower() in {'1', 'true'}:
-    DEBUG_SCREENSHOTS = True
-else:
-    DEBUG_SCREENSHOTS = False
+DEBUG_SCREENSHOTS = True if os.getenv('DEBUG_SCREENSHOTS') == 'true' else False
