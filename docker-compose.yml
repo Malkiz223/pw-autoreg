@@ -3,13 +3,15 @@ version: "3.8"
 services:
   selenium:
     image: selenium/standalone-chrome
-    shm_size: 2300m  # ~2.3g, только integer
+    shm_size: 2g  # рекомендовано 2g, но на 10 нод я упирался в память
     environment:
+      - TZ=Europe/Moscow
       - START_XVFB=false  # для --headless-режиме можно поставить в false
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true  # позволяет запустить больше сессий на одной ноде селениума
-      - SE_NODE_MAX_SESSIONS=16  # поставил по количеству потоков процессора
-      - JAVA_OPTS=-Dselenium.LOGGER.level=WARNING  # должно отключать логи селениума, но не работает?
-      - JAVA_OPTS=-Dwebdriver.chrome.whitelistedIps= # должно убирать спам в логи с сообщением [99]
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true  # позволяет запустить больше сессий на одной ноде Selenium
+      - SE_NODE_MAX_INSTANCES=5
+      - SE_NODE_MAX_SESSIONS=5  # не меньше количества инстансов
+      # должно отключать логи Selenium и убирать спам ошибки "[99]"
+      - JAVA_OPTS=-Dselenium.LOGGER.level=WARNING -Dwebdriver.chrome.whitelistedIps=
     ports:
       - "4444" # 4444:4444, если нужно выставить порт наружу
     restart: always
@@ -26,7 +28,7 @@ services:
     env_file:
       - .env
     deploy:
-      replicas: 10
+      replicas: 5
     volumes:
       - pw-accounts:/app/accounts
       - registrations-debug-screenshots:/app/screenshots
