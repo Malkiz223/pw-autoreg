@@ -41,11 +41,12 @@ class PwAccountRegistrar:
     def __init__(self, account_login: str, account_password: str, account_proxy: str = None):
         self.login = account_login.lower()
         self.password = account_password
-        self.proxy = account_proxy
         self.options = webdriver.ChromeOptions()
+        self.proxy = account_proxy
+        if self.proxy:
+            self.options.add_argument(f'--proxy-server={self.proxy}')
         self.options.add_argument('--disable-blink-features=AutomationControlled')
         self.options.add_argument('--headless')
-        self.options.add_argument(f'--proxy-server={self.proxy}')
         self.pw_main_page_url = 'https://pw.mail.ru/'
         self.driver = self._get_selenium_webdriver()
 
@@ -303,11 +304,13 @@ if __name__ == '__main__':
         account = PwAccountRegistrar(login, password, proxy)
         if account.register_account():
             successful_registrations += 1
-            proxy_dict[proxy]['good_registrations'] += 1
+            if proxy:  # нужно для печати статистики конкретного прокси при провале регистрации
+                proxy_dict[proxy]['successful_registrations'] += 1
         else:
-            proxy_dict[proxy]['bad_registrations'] += 1
             logger.info(f'Аккаунт не зарегистрирован')
-            logger.info(current_proxy_statistic(proxy, proxy_dict))
-        del account
+            if proxy:  # нужно для печати статистики конкретного прокси при провале регистрации
+                proxy_dict[proxy]['unsuccessful_registrations'] += 1
+                logger.info(current_proxy_statistic(proxy, proxy_dict))
         registration_iterations += 1
         logger.info(f'Зарегистрировано: {successful_registrations}. Попыток: {registration_iterations}.')
+        del account
