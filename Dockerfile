@@ -2,7 +2,7 @@ FROM python:slim-buster
 
 WORKDIR /app
 
-COPY /app/requirements.txt .
+COPY requirements.txt .
 
 RUN apt update \
     && apt upgrade \
