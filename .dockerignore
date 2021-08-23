@@ -2,4 +2,5 @@
 /app/chromedriver.exe
 /app/__pycache__
 /app/accounts/
+/app/screenshots
 /.env
