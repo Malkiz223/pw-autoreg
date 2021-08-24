@@ -9,11 +9,6 @@ from config import IN_DOCKER, proxy_list
 # логирование
 logger = logging.getLogger(__name__)
 
-# создание удобного словаря из config.proxy_list
-proxy_dict = dict()
-for proxy_ in proxy_list:
-    proxy_dict[proxy_] = {'successful_registrations': 0, 'unsuccessful_registrations': 0}
-
 # подключение к Redis
 try:
     if IN_DOCKER:
@@ -28,6 +23,16 @@ try:
 except exceptions.ConnectionError:
     logger.warning('Нет подключения к Redis. Он крайне рекомендуется при работе с прокси')
     redis_works = False
+
+
+def _get_proxy_dict():
+    """
+    Создание удобного словаря из config.proxy_list
+    """
+    proxy_dict_ = dict()
+    for proxy_ in proxy_list:
+        proxy_dict_[proxy_] = {'successful_registrations': 0, 'unsuccessful_registrations': 0}
+    return proxy_dict_
 
 
 def get_good_proxy() -> str or None:
@@ -81,3 +86,6 @@ def block_proxy_if_redis_works(proxy, block_seconds=300) -> bool:
     redis.set(name=proxy, value=0, ex=block_seconds)
     logger.debug(f'Заблокировали прокси {proxy} на {block_seconds} секунд')
     return True
+
+
+proxy_dict = _get_proxy_dict()
