@@ -7,9 +7,9 @@ services:
     environment:
       - TZ=Europe/Moscow
       - START_XVFB=false  # для --headless-режиме можно поставить в false
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true  # позволяет запустить больше сессий на одной ноде Selenium
-      - SE_NODE_MAX_INSTANCES=5
-      - SE_NODE_MAX_SESSIONS=5  # не меньше количества инстансов
+      - NODE_OVERRIDE_MAX_SESSIONS=true  # позволяет запустить больше сессий на одной ноде Selenium
+      - NODE_MAX_INSTANCES=10
+      - NODE_MAX_SESSION=5  # не меньше количества инстансов?
       # должно отключать логи Selenium и убирать спам ошибки "[99]"
       - JAVA_OPTS=-Dselenium.LOGGER.level=WARNING -Dwebdriver.chrome.whitelistedIps=
     ports:
