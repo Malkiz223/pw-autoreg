@@ -50,9 +50,13 @@ def get_good_proxy() -> str or None:
             logger.debug(f'Redis не работает, выдаём случайный прокси: {proxy}')
             return proxy
 
-        current_proxy_ttl = redis.ttl(proxy)  # проверяем, "заблокирован" ли прокси в Редис
+        try:
+            current_proxy_ttl = redis.ttl(proxy)  # проверяем, "заблокирован" ли прокси в Редис
+        except exceptions.ConnectionError:
+            logger.debug('Redis упал? Не можем подключиться к нему')  # global redis_works = False?
+            return False
         if not current_proxy_ttl > 0:  # возвращает -2 на отсутствующие и истёкшие TTL
-            block_proxy_if_redis_works(proxy_, 10)  # запрещаем брать этот прокси другим клиентам на 10 секунд
+            block_proxy_if_redis_works(proxy, 20)  # запрещаем брать этот прокси другим клиентам на 20 секунд
             logger.debug(f'Выдали отфильтрованный через Redis прокси: {proxy}')
             return proxy
         else:
@@ -83,7 +87,11 @@ def block_proxy_if_redis_works(proxy, block_seconds=300) -> bool:
     """
     if not redis_works:
         return False
-    redis.set(name=proxy, value=0, ex=block_seconds)
+    try:
+        redis.set(name=proxy, value=0, ex=block_seconds)
+    except exceptions.ConnectionError:
+        logger.debug('Redis упал? Не можем подключиться к нему')  # global redis_works = False?
+        return False
     logger.debug(f'Заблокировали прокси {proxy} на {block_seconds} секунд')
     return True
 
