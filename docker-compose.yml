@@ -13,14 +13,10 @@ services:
       # должно отключать логи Selenium и убирать спам ошибки "[99]"
       - JAVA_OPTS=-Dselenium.LOGGER.level=WARNING -Dwebdriver.chrome.whitelistedIps=
     ports:
-      - "4444" # 4444:4444, если нужно выставить порт наружу
+      - "4444"
     restart: always
-
-  redis:
-    image: redis:6.2
-    restart: always
-    ports:
-      - "6379" # 6379:6379, если нужно выставить порт наружу
+    networks:
+      - pw-autoreg_selenium
 
   app:
     image: malkiz/pw-autoreg
@@ -34,10 +30,17 @@ services:
       - registrations-debug-screenshots:/app/screenshots
     depends_on:
       - selenium
-      - redis
+    networks:
+      - pw-autoreg_redis  # external network
+      - pw-autoreg_selenium
 
 volumes:
   pw-accounts:
     name: pw-accounts
   registrations-debug-screenshots:
     name: registrations-debug-screenshots
+
+networks:
+  pw-autoreg_redis:
+    external: true
+  pw-autoreg_selenium:
