@@ -13,7 +13,7 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError, ProtocolError
 from captcha_solver import solve_mailru_captcha
 from config import IN_DOCKER, DEBUG_SCREENSHOTS, CHROMEDRIVER_PATH
 from db import save_account
-from proxy import proxy_dict, current_proxy_statistic, get_good_proxy, block_proxy_if_redis_works
+from proxy import get_good_proxy, block_proxy_if_redis_works
 
 # логирование
 logger = logging.getLogger(__name__)
@@ -306,13 +306,8 @@ if __name__ == '__main__':
         account = PwAccountRegistrar(login, password, proxy)
         if account.register_account():
             successful_registrations += 1
-            if proxy:  # нужно для печати статистики конкретного прокси при провале регистрации
-                proxy_dict[proxy]['successful_registrations'] += 1
         else:
             logger.info(f'Аккаунт не зарегистрирован')
-            if proxy:  # нужно для печати статистики конкретного прокси при провале регистрации
-                proxy_dict[proxy]['unsuccessful_registrations'] += 1
-                logger.info(current_proxy_statistic(proxy, proxy_dict))
         registration_iterations += 1
         logger.info(f'Зарегистрировано: {successful_registrations}. Попыток: {registration_iterations}.')
         del account

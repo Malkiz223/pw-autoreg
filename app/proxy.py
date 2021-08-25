@@ -25,16 +25,6 @@ except exceptions.ConnectionError:
     redis_works = False
 
 
-def _get_proxy_dict():
-    """
-    Создание удобного словаря из config.proxy_list
-    """
-    proxy_dict_ = dict()
-    for proxy_ in proxy_list:
-        proxy_dict_[proxy_] = {'successful_registrations': 0, 'unsuccessful_registrations': 0}
-    return proxy_dict_
-
-
 def get_good_proxy() -> str or None:
     """
     Выбирается рандомный прокси из листа, проверяется в Redis, если TTL proxy больше нуля - рандомить следующий
@@ -64,20 +54,6 @@ def get_good_proxy() -> str or None:
             time.sleep(1)
 
 
-def current_proxy_statistic(proxy: str, proxy_status_dict: dict) -> str:
-    """
-    Статистика конкретного прокси печатается в консоль, если регистрация аккаунта на данном прокси закончилась провалом.
-    Позволяет заметить прокси с околонулевым процентом регистраций, чтобы вручную убрать его из списка.
-    """
-    proxy_without_port = proxy.split(':')[0]
-    good_registrations = proxy_status_dict[proxy]['successful_registrations']
-    bad_registrations = proxy_status_dict[proxy]['unsuccessful_registrations']
-    total_registrations = good_registrations + bad_registrations
-    success_rate = good_registrations / total_registrations * 100
-    # сообщение вида '123.45.67.89:   17/18   [94.44% success]'
-    return f'{proxy_without_port}:\t{good_registrations}/{total_registrations}\t[{success_rate:.2f}% success]'
-
-
 def block_proxy_if_redis_works(proxy, block_seconds=300) -> bool:
     """
     Позволяет блокировать выдачу конкретного прокси по различным причинам. Примеры использования:
@@ -94,6 +70,3 @@ def block_proxy_if_redis_works(proxy, block_seconds=300) -> bool:
         return False
     logger.debug(f'Заблокировали прокси {proxy} на {block_seconds} секунд')
     return True
-
-
-proxy_dict = _get_proxy_dict()
