@@ -196,19 +196,12 @@ class PwAccountRegistrar:
         logger.debug('Активировали кнопку "Регистрация" в MY.GAMES')
         try:
             self.delay(2)  # кнопка "Зарегистрироваться"
-            self.driver.find_element_by_xpath("//button[contains(text(),'Зарегистрироваться')]").click()
+            # ищем текст "егистр", т.к. кнопка случайным образом может называться "Регистрация" и "Зарегистрироваться"
+            self.driver.find_element_by_xpath("//button[contains(text(),'егистр')]").click()
             logger.debug('Попробовали нажать кнопку "Зарегистрироваться" в MY.GAMES')
             return True
         except (InvalidSelectorException, NoSuchElementException):
             logger.debug(f'Не смогли нажать на кнопку "Зарегистрироваться" в MY.GAMES')
-        try:
-            self.delay(2)  # кнопка "Регистрация"
-            self.driver.find_element_by_xpath("//button[contains(text(),'Регистрация')]").click()
-            logger.debug('Нажали на кнопку "Регистрация" в MY.GAMES')
-            return True
-        except (InvalidSelectorException, NoSuchElementException):
-            logger.error(f'Не смогли нажать на кнопку "Регистрация" в MY.GAMES')
-            self.save_debug_screenshot_if_enabled('missing_mygames_registration_button')
             raise
 
     def _press_continue_button(self):
