@@ -52,6 +52,7 @@ class PwAccountRegistrar:
         self.options.add_argument('--headless')
         self.pw_main_page_url = 'https://pw.mail.ru/'
         self.driver = self._get_selenium_webdriver()
+        self.set_implicitly_wait()
 
     def register_account(self) -> bool:
         """
@@ -64,7 +65,6 @@ class PwAccountRegistrar:
             self._click_main_register_button()
             self._switch_to_window_index(1)
             self._enter_login_and_password()
-            time.sleep(1)
             self._press_mygames_registration_button()
             self._check_has_error()
             self._press_continue_button()
@@ -73,17 +73,18 @@ class PwAccountRegistrar:
             if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login, self.proxy)
             self._press_final_register_button()
-            time.sleep(2)
             if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login, self.proxy)
             return self._check_registration_status()
         except Exception:
             return False
 
-    def delay(self, wait_time=10) -> None:
+    def set_implicitly_wait(self, wait_time=5) -> None:
         """
         Позволяет не ждать полное время до появления элемента на странице.
         Как только элемент стал активным - возобновляет скрипт.
+        При вызове меняет настройку у драйвера, заставляющую не бросать ошибку при отсутствии элемента.
+        Вызвав однажды меняет задержку перед исключением на весь скрипт.
         """
         self.driver.implicitly_wait(wait_time)
 
@@ -129,17 +130,18 @@ class PwAccountRegistrar:
         Можно переместить модуль в решатель капчи, в любом случае он к нему обращается по итогу.
         """
         try:
-            self.delay(1)
+            self.set_implicitly_wait(1)
             if self.driver.current_url == 'https://pw.mail.ru/validate/?ref_url=pw.mail.ru':
                 return True
             return False
         except WebDriverException:
             logger.error('Браузер упал на проверке URL страницы?')  # ни разу сюда не заходили
             raise
+        finally:
+            self.set_implicitly_wait()
 
     def _open_pw_main_page(self):
         try:
-            self.delay()
             self.driver.get(self.pw_main_page_url)
             logger.debug('Открыли главную страницу PW')
         except (WebDriverException, AttributeError):
@@ -148,7 +150,6 @@ class PwAccountRegistrar:
 
     def _click_main_register_button(self):
         try:
-            self.delay()
             self.driver.find_element_by_xpath("//a[contains(text(),'Регистрация')]").click()
             logger.debug('Нажали кнопку "Регистрация" на главной странице')
         except NoSuchElementException:
@@ -162,7 +163,6 @@ class PwAccountRegistrar:
         переключиться для дальнейшей работы с браузером. Затем вернуться на основное окно.
         """
         try:
-            self.delay()
             self.driver.switch_to.window(self.driver.window_handles[window_index])  # передаём хендлер нужного окна
             logger.debug(f'Переключились на окно с индексом {window_index}')
         except (IndexError, WebDriverException):
@@ -171,7 +171,6 @@ class PwAccountRegistrar:
 
     def _enter_login_and_password(self):
         try:
-            self.delay()
             self.driver.find_element_by_name('email').send_keys(self.login)
             time.sleep(0.2)
             self.driver.find_element_by_name('password').send_keys(self.password)
@@ -188,14 +187,12 @@ class PwAccountRegistrar:
         скорее первый вариант. Видимо, особый способ защиты.
         execute_script здесь активирует кнопку для нажатия, позволяя не ставить галочки на всяких согласиях.
         """
-        self.delay()
         self.driver.execute_script(  # активируем кнопку "Регистрация" или "Зарегистрироваться", они случайны
             """var button_next = document.getElementsByClassName("ph-form__btn ph-btn gtm_reg_btn");
             for (var i = 0; i < button_next.length; i++) {button_next[i].removeAttribute("disabled");}""")
         time.sleep(0.5)
         logger.debug('Активировали кнопку "Регистрация" в MY.GAMES')
         try:
-            self.delay(2)  # кнопка "Зарегистрироваться"
             # ищем текст "егистр", т.к. кнопка случайным образом может называться "Регистрация" и "Зарегистрироваться"
             self.driver.find_element_by_xpath("//button[contains(text(),'егистр')]").click()
             logger.debug('Попробовали нажать кнопку "Зарегистрироваться" в MY.GAMES')
@@ -206,12 +203,12 @@ class PwAccountRegistrar:
 
     def _press_continue_button(self):
         try:
-            self.delay(5)
+            self.set_implicitly_wait(5)
             self.driver.find_element_by_xpath("//button[contains(text(),'Продолжить')]").click()
             logger.debug('Нажали кнопку "Продолжить"')
         except NoSuchElementException:
             try:
-                self.delay(1)
+                self.set_implicitly_wait(1)
                 if self.driver.find_element_by_xpath("//div[contains(text(),'Этот email уже занят')]"):
                     logger.warning(f'Почта {self.login} уже занята')
                     raise
@@ -221,6 +218,8 @@ class PwAccountRegistrar:
             logger.error('Какая-то проблема с кнопкой "Продолжить"')
             self.save_debug_screenshot_if_enabled('missing_continue_button')
             raise
+        finally:
+            self.set_implicitly_wait()
 
     def _press_final_register_button(self):
         """
@@ -228,14 +227,12 @@ class PwAccountRegistrar:
         Убираем атрибут disabled у кнопки, в результате чего она становится активной (можно не проходить reCaptcha)
         """
         try:
-            self.delay(5)  # активируем кнопку "Зарегистрироваться"
             self.driver.execute_script("""var elems = document.querySelectorAll(".oauth_modal_button");
                                         [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
         except TimeoutException:
             logger.error('Не смогли активировать финальную кнопку "Зарегистрироваться"')
             raise
         try:
-            self.delay()
             self.driver.find_element_by_xpath("//div[contains(text(),'Зарегистрироваться')]").click()
             logger.debug('Нажали кнопку финальную кнопку "Зарегистрироваться"')
         except (StaleElementReferenceException, NoSuchElementException):
@@ -249,7 +246,7 @@ class PwAccountRegistrar:
         по наличию кнопки "Мой кабинет".
         """
         try:
-            self.delay()
+            self.set_implicitly_wait(10)
             self.driver.find_element_by_xpath("//a[contains(text(),'Мой кабинет')]")
             save_account(self.login, self.password, self.proxy)
             logger.debug(f'Зарегистрировали аккаунт {self.login} и сохранили в базу')
@@ -265,7 +262,7 @@ class PwAccountRegistrar:
         продолжить регистрацию. На странице появляется поле с текстом ошибки, по тексту анализируем её.
         """
         try:
-            self.delay(1)
+            self.set_implicitly_wait(1)
             error_message = self.driver.find_element_by_xpath("//div[@class='ph-alert ph-alert_error']").text
             if error_message == "Превышено число попыток":
                 block_proxy_if_redis_works(self.proxy)
@@ -275,6 +272,8 @@ class PwAccountRegistrar:
                 logger.critical(f'Новая ошибка: {error_message}')
         except NoSuchElementException:
             logger.debug('Ошибок регистрации нет, идём дальше')
+        finally:
+            self.set_implicitly_wait()
 
     def __del__(self):
         """
