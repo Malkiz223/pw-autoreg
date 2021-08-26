@@ -51,6 +51,7 @@ class PwAccountRegistrar:
         self.options.add_argument('--disable-blink-features=AutomationControlled')
         self.options.add_argument('--headless')
         self.pw_main_page_url = 'https://pw.mail.ru/'
+        self.my_games_register_page_url = 'https://account.my.games/oauth2/signup/?continue=https%3A%2F%2Faccount.my.games%2Foauth2%2F%3Fredirect_uri%3Dhttps%253A%252F%252Fpw.mail.ru%252Foauth2.php%253Fcontinue%253D%25252F%26client_id%3Dpw.mail.ru%26response_type%3Dcode%26signup_method%3Demail%252Cphone%26signup_social%3Dmailru%252Cfb%252Cvk%252Cg%252Cok%252Ctwitch%252Ctw%26show_auth_btn%3Dmailru%26lang%3Dru_RU%26gc_id%3D0.61%26signup%3D1&client_id=pw.mail.ru&lang=ru_RU&signup_method=email%2Cphone&signup_social=mailru%2Cfb%2Cvk%2Cg%2Cok%2Ctwitch%2Ctw&show_auth_btn=mailru&gc_id=0.61'
         self.driver = self._get_selenium_webdriver()
         self.set_implicitly_wait()
 
@@ -59,17 +60,14 @@ class PwAccountRegistrar:
         Основной метод класса. Возвращает false, если в одном из методов произошла ошибка.
         """
         try:
-            self._open_pw_main_page()
+            self._open_my_games_register_page()
             if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login, self.proxy)
-            self._click_main_register_button()
-            self._switch_to_window_index(1)
             self._enter_login_and_password()
             self._press_mygames_registration_button()
             self._check_has_error()
             self._press_continue_button()
-            self._switch_to_window_index(0)
-            time.sleep(3)
+            self.driver.get(self.pw_main_page_url)
             if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login, self.proxy)
             self._press_final_register_button()
@@ -140,9 +138,9 @@ class PwAccountRegistrar:
         finally:
             self.set_implicitly_wait()
 
-    def _open_pw_main_page(self):
+    def _open_my_games_register_page(self):
         try:
-            self.driver.get(self.pw_main_page_url)
+            self.driver.get(self.my_games_register_page_url)
             logger.debug('Открыли главную страницу PW')
         except (WebDriverException, AttributeError):
             logger.error(f'Ошибка в открытии главной страницы PW')
