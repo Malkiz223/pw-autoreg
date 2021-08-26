@@ -130,9 +130,9 @@ IN_DOCKER: int = strtobool(os.getenv('DOCKER', 'false'))  # 0 или 1
 
 # будет использоваться, если скрипт запущен не в Docker (тогда использовать свои chromedriver)
 if platform == 'win32':
-    CHROMEDRIVER_PATH = os.path.abspath(os.getcwd()) + '\\chromedriver.exe'
+    CHROMEDRIVER_PATH = os.path.join(os.path.abspath(os.getcwd()), 'chromedriver.exe')
 elif platform == 'linux':
-    CHROMEDRIVER_PATH = os.path.abspath(os.getcwd()) + '/chromedriver'
+    CHROMEDRIVER_PATH = os.path.join(os.path.abspath(os.getcwd()), 'chromedriver')
 
 # API решателя капчи от rucaptcha.com или 2captcha.com
 CAPTCHA_API_KEY = os.getenv('APIKEY_2CAPTCHA')
