@@ -225,6 +225,8 @@ class PwAccountRegistrar:
         Убираем атрибут disabled у кнопки, в результате чего она становится активной (можно не проходить reCaptcha)
         """
         try:
+            register_button = WebDriverWait(self.driver, 5).until(
+                expected_conditions.visibility_of_element_located((By.XPATH, "//div[contains(text(),'Зарегистрироваться')]")))
             self.driver.execute_script("""var elems = document.querySelectorAll(".oauth_modal_button");
                                         [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
             logger.debug('Активировали кнопку "Зарегистрироваться"')
@@ -262,10 +264,10 @@ class PwAccountRegistrar:
         """
         try:
             self.set_implicitly_wait(1)
-            error_message = self.driver.find_element_by_xpath("//div[@class='ph-alert ph-alert_error']").text
+            error_message = self.driver.find_element_by_css_selector(".ph-alert_error").text
             if error_message == "Превышено число попыток":
                 block_proxy_if_redis_works(self.proxy)
-                logger.error(f"Блокируем прокси {self.proxy}")
+                logger.error(f"Превышено число попыток, блокируем прокси {self.proxy}")
                 raise
             else:
                 logger.critical(f'Новая ошибка: {error_message}')
