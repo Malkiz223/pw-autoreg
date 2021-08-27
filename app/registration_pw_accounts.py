@@ -117,10 +117,10 @@ class PwAccountRegistrar:
                 logger.debug('Получили webdriver')
                 return driver
             except (SessionNotCreatedException, WebDriverException, ProtocolError):
-                logger.error(f'Не смогли получить webdriver')
+                logger.error('Не смогли получить webdriver')
                 time.sleep(2)
             except (NewConnectionError, MaxRetryError):
-                logger.warning(f'Selenium не готов')
+                logger.warning('Selenium не готов')
                 time.sleep(2)
 
     def _check_captcha(self) -> bool:
@@ -174,7 +174,7 @@ class PwAccountRegistrar:
             self.driver.find_element_by_name('password').send_keys(self.password)
             logger.debug(f'Ввели логин и пароль от аккаунта: {self.login} {self.password}')
         except (NoSuchElementException, WebDriverException):
-            logger.error(f'Не смогли ввести логин и пароль от аккаунта')
+            logger.error('Не смогли ввести логин и пароль от аккаунта')
             self.save_debug_screenshot_if_enabled('missing_login_and_password_fields')
             raise
 
@@ -196,7 +196,7 @@ class PwAccountRegistrar:
             logger.debug('Попробовали нажать кнопку "Зарегистрироваться" в MY.GAMES')
             return True
         except (InvalidSelectorException, NoSuchElementException):
-            logger.debug(f'Не смогли нажать на кнопку "Зарегистрироваться" в MY.GAMES')
+            logger.debug('Не смогли нажать на кнопку "Зарегистрироваться" в MY.GAMES')
             raise
 
     def _press_continue_button(self):
@@ -227,6 +227,7 @@ class PwAccountRegistrar:
         try:
             self.driver.execute_script("""var elems = document.querySelectorAll(".oauth_modal_button");
                                         [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
+            logger.debug('Активировали кнопку "Зарегистрироваться"')
         except TimeoutException:
             logger.error('Не смогли активировать финальную кнопку "Зарегистрироваться"')
             raise
@@ -250,7 +251,7 @@ class PwAccountRegistrar:
             logger.debug(f'Зарегистрировали аккаунт {self.login} и сохранили в базу')
             return True
         except NoSuchElementException:
-            logger.error(f'Отсутствует кнопка "Мой кабинет"')
+            logger.error('Отсутствует кнопка "Мой кабинет"')
             self.save_debug_screenshot_if_enabled('missing_my_cabinet_button')
             return False
 
@@ -297,7 +298,7 @@ if __name__ == '__main__':
         if account.register_account():
             successful_registrations += 1
         else:
-            logger.info(f'Аккаунт не зарегистрирован')
+            logger.info('Аккаунт не зарегистрирован')
         registration_iterations += 1
         logger.info(f'Зарегистрировано: {successful_registrations}. Попыток: {registration_iterations}.')
         del account
