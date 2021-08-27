@@ -8,6 +8,9 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, WebDriverException, \
     SessionNotCreatedException, TimeoutException, InvalidSelectorException
 from selenium.webdriver import DesiredCapabilities
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
 from urllib3.exceptions import MaxRetryError, NewConnectionError, ProtocolError
 
 from captcha_solver import solve_mailru_captcha
@@ -68,8 +71,14 @@ class PwAccountRegistrar:
             self._check_has_error()
             self._press_continue_button()
             self.driver.get(self.pw_main_page_url)
-            if self._check_captcha():
+
+            if self._check_captcha():  # если была капча - не залогинит на сайт, надо логиниться самому
                 solve_mailru_captcha(self.driver, self.login, self.proxy)
+                self.driver.find_element_by_xpath("//div[contains(text(),'Войти')]").click()
+                self._switch_to_window_index(1)
+                self._press_continue_button()
+                self._switch_to_window_index(0)
+
             self._press_final_register_button()
             if self._check_captcha():
                 solve_mailru_captcha(self.driver, self.login, self.proxy)
@@ -143,16 +152,7 @@ class PwAccountRegistrar:
             self.driver.get(self.my_games_register_page_url)
             logger.debug('Открыли главную страницу PW')
         except (WebDriverException, AttributeError):
-            logger.error(f'Ошибка в открытии главной страницы PW')
-            raise
-
-    def _click_main_register_button(self):
-        try:
-            self.driver.find_element_by_xpath("//a[contains(text(),'Регистрация')]").click()
-            logger.debug('Нажали кнопку "Регистрация" на главной странице')
-        except NoSuchElementException:
-            logger.error(f'Отсутствует кнопка "Регистрация" на главной странице')
-            self.save_debug_screenshot_if_enabled('missing_registration_button')
+            logger.error('Ошибка в открытии главной страницы PW')
             raise
 
     def _switch_to_window_index(self, window_index):
@@ -186,7 +186,7 @@ class PwAccountRegistrar:
         execute_script здесь активирует кнопку для нажатия, позволяя не ставить галочки на всяких согласиях.
         """
         self.driver.execute_script(  # активируем кнопку "Регистрация" или "Зарегистрироваться", они случайны
-            """var button_next = document.getElementsByClassName("ph-form__btn ph-btn gtm_reg_btn");
+            """var button_next = document.getElementsByClassName("gtm_reg_btn");
             for (var i = 0; i < button_next.length; i++) {button_next[i].removeAttribute("disabled");}""")
         time.sleep(0.5)
         logger.debug('Активировали кнопку "Регистрация" в MY.GAMES')
@@ -232,7 +232,7 @@ class PwAccountRegistrar:
             logger.error('Не смогли активировать финальную кнопку "Зарегистрироваться"')
             raise
         try:
-            self.driver.find_element_by_xpath("//div[contains(text(),'Зарегистрироваться')]").click()
+            register_button.click()
             logger.debug('Нажали кнопку финальную кнопку "Зарегистрироваться"')
         except (StaleElementReferenceException, NoSuchElementException):
             logger.error('Не смогли нажать на финальную кнопку "Зарегистрироваться"')
