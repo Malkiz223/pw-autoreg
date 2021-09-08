@@ -131,6 +131,8 @@ class PwAccountRegistrar:
             except (NewConnectionError, MaxRetryError):
                 logger.warning('Selenium не готов')
                 time.sleep(2)
+            except TypeError as err:
+                logger.error(f'Не получили webdriver: {err}')
 
     def _check_captcha(self) -> bool:
         """
