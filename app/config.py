@@ -23,7 +23,3 @@ DEBUG_SCREENSHOTS: int = strtobool(os.getenv('DEBUG_SCREENSHOTS', 'false'))  # 0
 
 # API решателя капчи от rucaptcha.com или 2captcha.com
 CAPTCHA_API_KEY = os.getenv('APIKEY_2CAPTCHA')
-
-# записываем свои прокси в виде 'IP:port'
-# логины и пароли пока не поддерживаются, привязываем прокси к своему IP
-proxy_list: list[str] = []  # '123.123.123.123:1234', '111.111.111.111:1111',
