@@ -14,16 +14,12 @@ IN_DOCKER: int = strtobool(os.getenv('DOCKER', 'false'))  # 0 или 1
 
 # будет использоваться chromedriver, если скрипт запущен не в Docker
 if platform == 'win32':
-    CHROMEDRIVER_PATH = os.path.join(os.path.abspath(os.getcwd()), 'chromedriver.exe')
+    CHROMEDRIVER_PATH = os.path.join(os.path.abspath(os.getcwd()), 'webdriver/chromedriver.exe')
 elif platform == 'linux':
-    CHROMEDRIVER_PATH = os.path.join(os.path.abspath(os.getcwd()), 'chromedriver')
+    CHROMEDRIVER_PATH = os.path.join(os.path.abspath(os.getcwd()), 'webdriver/chromedriver')
 
 # 1, если нужно сохранять скриншоты ошибок
 DEBUG_SCREENSHOTS: int = strtobool(os.getenv('DEBUG_SCREENSHOTS', 'false'))  # 0 или 1
 
 # API решателя капчи от rucaptcha.com или 2captcha.com
 CAPTCHA_API_KEY = os.getenv('APIKEY_2CAPTCHA')
-
-# записываем свои прокси в виде 'IP:port'
-# логины и пароли пока не поддерживаются, привязываем прокси к своему IP
-proxy_list: list[str] = []  # '123.123.123.123:1234', '111.111.111.111:1111',

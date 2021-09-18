@@ -1,10 +1,11 @@
 import logging
+import os.path
 import random
 import time
 
 from redis import Redis, exceptions
 
-from config import IN_DOCKER, proxy_list
+from config import IN_DOCKER
 
 # логирование
 logger = logging.getLogger(__name__)
@@ -25,16 +26,26 @@ except exceptions.ConnectionError:
     redis_works = False
 
 
-def get_good_proxy() -> str or None:
+def get_proxy_from_text_file_if_exists() -> list or None:
+    """
+    Берёт прокси из текстового файла proxy.txt. Если файл оказался пустым, возвращает пустой список.
+    """
+    if not os.path.isfile('proxy.txt'):
+        return None
+    with open('proxy.txt') as proxy_file:
+        return [proxy.strip() for proxy in proxy_file]
+
+
+def get_good_proxy_if_exists() -> str or None:
     """
     Выбирается рандомный прокси из листа, проверяется в Redis, если TTL proxy больше нуля - рандомить следующий
     Как только прокси нет в Редисе - отдавать строку IP:порт
     """
+    proxy_list = get_proxy_from_text_file_if_exists()
     while True:
-        if proxy_list:
-            proxy = random.choice(proxy_list)
-        else:
+        if not proxy_list:
             return None
+        proxy = random.choice(proxy_list)
 
         if not redis_works:
             logger.debug(f'Redis не работает, выдаём случайный прокси: {proxy}')

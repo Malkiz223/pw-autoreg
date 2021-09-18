@@ -1,5 +1,5 @@
-/app/chromedriver
-/app/chromedriver.exe
+/app/webdriver/chromedriver
+/app/webdriver/chromedriver.exe
 /app/__pycache__
 /app/accounts/
 /app/screenshots
