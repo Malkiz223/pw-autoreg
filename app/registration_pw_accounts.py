@@ -16,7 +16,7 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError, ProtocolError
 from captcha_solver import solve_mailru_captcha
 from config import IN_DOCKER, DEBUG_SCREENSHOTS, CHROMEDRIVER_PATH
 from db import save_account
-from proxy import get_good_proxy, block_proxy_if_redis_works
+from proxy import get_good_proxy_if_exists, block_proxy_if_redis_works
 
 # логирование
 logger = logging.getLogger(__name__)
@@ -228,7 +228,8 @@ class PwAccountRegistrar:
         """
         try:
             register_button = WebDriverWait(self.driver, 5).until(
-                expected_conditions.visibility_of_element_located((By.XPATH, "//div[contains(text(),'Зарегистрироваться')]")))
+                expected_conditions.visibility_of_element_located(
+                    (By.XPATH, "//div[contains(text(),'Зарегистрироваться')]")))
             self.driver.execute_script("""var elems = document.querySelectorAll(".oauth_modal_button");
                                         [].forEach.call(elems, function(el) {el.classList.remove("disabled");});""")
             logger.debug('Активировали кнопку "Зарегистрироваться"')
@@ -297,7 +298,7 @@ if __name__ == '__main__':
 
     while True:
         login, password = generate_random_account()
-        proxy: str or None = get_good_proxy()  # скрипт успешно отработает с прокси и без него
+        proxy: str or None = get_good_proxy_if_exists()  # скрипт успешно отработает с прокси и без него
         account = PwAccountRegistrar(login, password, proxy)
         if account.register_account():
             successful_registrations += 1
