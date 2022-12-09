@@ -1,5 +1,5 @@
 ﻿2captcha-python==1.0.3
-certifi==2021.5.30
+certifi==2022.12.7
 charset-normalizer==2.0.5
 idna==3.2
 Pillow==9.0.1
